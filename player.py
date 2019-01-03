@@ -105,7 +105,7 @@ class Player(Creature):
                 "GP": f"{self.gp}"
             },
             {
-                "HP": f"{hpColor}{self.hp}{Fore.WHITE} / {self.maxHp}    ",
+                "HP": f"{hpColor}{self.hp}{Fore.WHITE} / {self.maxHp}         ",
                 "ATK": f"{self.atk} ({self.dam})",
                 "AC": f"{self.ac}",
             }

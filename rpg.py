@@ -9,6 +9,8 @@ from monster import Monster
 from item import Item
 from player import Player
 from room import Room
+from maps import Map
+from door import Door
 
 class Game:
     def __init__(self):
@@ -20,39 +22,46 @@ class Game:
         self.turn = 1
         self.nextLevel = 100
         self.level = 1
+        self.map = Map()
         self.options = {
             "start": "<L>oad, <N>ew",
             "combat": "<A>ttack, <D>efend, <R>un",
             "peace": "<R>est, <C>ontinue, <I>nventory, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
-            "inventory": "<E>quip, <C>lose"
+            "inventory": "<E>quip, <C>lose",
+            "map": self.map.getOptions()
         }
         self.resolver = {
             "start": self.startResolve,
             "combat": self.combatResolve,
             "peace": self.peaceResolve,
             "gameOver": self.gameOverResolve,
-            "inventory": self.inventoryResolve
+            "inventory": self.inventoryResolve,
+            "map": self.mapResolve
         }
         self.display = {
             "start": self.startDisplay,
             "combat": self.combatDisplay,
             "peace": self.peaceDisplay,
             "gameOver": self.gameOverDisplay,
-            "inventory": self.inventoryDisplay
+            "inventory": self.inventoryDisplay,
+            "map": self.mapDisplay
         }
         self.clearResolution()
-        
         self.nextTurn()
 
     def rollDie(self, size):
         return random.randint(1, size)
     
+    def incrementDungeonLevel(self):
+        self.level += 1
+        self.nextLevel += 100
+        self.map.dungeonLevel = self.level
+
     def incrementTurn(self, numTurns = 1):
         self.turn += numTurns
         if self.turn >= self.nextLevel:
-            self.level += 1
-            self.nextLevel += 100
+            self.incrementDungeonLevel()
             self.addResolution(f"{Fore.RED}The dungeon seems more dangerous...")
     
     def printRoll(self, roll, target):
@@ -74,9 +83,14 @@ class Game:
     def peaceDisplay(self):
         print(f"{Style.BRIGHT}Dungeon Level {self.level} - Turn {self.turn}\n")
         self.player.printStats()
+        print("")
+        self.room.printStats()
 
     def inventoryDisplay(self):
         self.player.printInventory()
+
+    def mapDisplay(self):
+        self.map.printFloor()
 
     def gameOverDisplay(self):
         self.player.printStats()
@@ -107,7 +121,7 @@ class Game:
             self.monster.damage(damRoll)
             self.player.incrementHistory("dmg_done", damRoll)
         else:
-            self.addResolution("You miss!")
+            self.addResolution(f"{Fore.WHITE}You miss!")
         # self.printRoll(atkRoll, monsterDefense)
                 
     def monsterAttack(self, playerDefending):
@@ -123,7 +137,7 @@ class Game:
             self.player.damage(damRoll)
             self.player.incrementHistory("dmg_taken", damRoll)
         else:
-            self.addResolution(f"The {self.monster.name} misses!")
+            self.addResolution(f"{Fore.WHITE}The {self.monster.name} misses!")
         # self.printRoll(atkRoll, playerDefense)
 
     def getReward(self, level):
@@ -135,20 +149,36 @@ class Game:
         
         levelUp = self.player.checkLevelUp()
         if levelUp:
-            self.level += 1
-            self.nextLevel = self.turn + 100
+            if self.level < self.player.level:
+                self.incrementDungeonLevel()
             self.addResolution(f"{Fore.YELLOW}You gained a level!")
 
         item = Item(self.monster.level)
         if item.type != "none":
             self.player.addItem(item)
             self.addResolution(f"{Fore.YELLOW}You found: {item.name}")
-        
+
     def deathCheck(self):
         if self.player.hp <= 0:
             self.addResolution(f"{Fore.RED}{Style.BRIGHT}You die!")
             self.player.setEpitaph(self.monster, self.level)
             self.mode = "gameOver"
+
+    def mapResolve(self, action):
+        if action == "B":
+            self.mode = "peace"
+        elif action in ["N", "S", "E", "W"]:
+            direction = action.lower()
+            if direction in self.room.doors.keys():
+                self.map.movePlayer(direction)
+                self.incrementTurn()
+                monster = self.map.getCurrentRoom().monster
+                if monster:
+                    self.monster = monster
+                    self.mode = "combat"
+        else:
+            return False
+        return True
 
     def startResolve(self, action):
         if action == "L":            
@@ -157,18 +187,14 @@ class Game:
             self.player.loadItems(load["items"])
             for i in load["game"]:
                 setattr(self, i, load["game"][i])
-            self.room = Room(self.player)
-            self.monster = Monster(self.level)
-            self.mode = "combat"
         elif action == "N":
             print("Choose a name:")
             name = input()
             self.player = Player(name)
-            self.room = Room(self.player)
-            self.monster = Monster(self.level)
-            self.mode = "combat"
         else:
             return False
+        self.room = self.map.getCurrentRoom()
+        self.mode = "peace"
         return True
 
     def combatResolve(self, action):
@@ -177,6 +203,7 @@ class Game:
                 
             if self.monster.hp <= 0:
                 self.addResolution(f"The {self.monster.name} dies!")
+                self.room.removeMonster()
                 self.player.incrementHistory("kills")
                 if self.player.hp <= self.player.maxHp * .25:
                     self.player.incrementHistory("risky_win")
@@ -203,9 +230,7 @@ class Game:
 
     def peaceResolve(self, action):
         if action == "C":
-            self.addResolution("You continue your journey...")
-            self.monster = Monster(self.level)
-            self.mode = "combat"
+            self.mode = "map"
         elif action == "R":
             timeToRest = (self.player.maxHp - self.player.hp) * 2
             self.addResolution("You take some time to recover...")
@@ -260,11 +285,10 @@ class Game:
         self.printOptions()
         resolved = False
         self.clearResolution()
-        while not resolved:
-            action = input()
-            if len(action) > 0:
-                action = action[0].upper()
-                resolved = self.resolver[self.mode](action)
+        action = input()
+        if len(action) > 0:
+            action = action[0].upper()
+            self.resolver[self.mode](action)
         
     def nextTurn(self):
         clear()
