@@ -123,6 +123,11 @@ atkVerbs = {
             "stabs",
             "pokes",
             "impales"
+        ],
+        "blunt": [
+            "bashes",
+            "smashes",
+            "crushes"
         ]
     },
     "animal": {

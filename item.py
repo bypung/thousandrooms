@@ -2,11 +2,12 @@ import random
 import item_list
 
 class Item:
-    def __init__(self, level):
-        self.level = level
-        self.equipped = False
+    def __init__(self, level, data = None):
+        if level > 0:
+            self.level = level
+            self.equipped = False
         
-        info = self.getItem(self.level)
+        info = data if data else self.getItem(self.level)
 
         if info != None:
             for i in info:

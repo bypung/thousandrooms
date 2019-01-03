@@ -15,7 +15,7 @@ class Game:
         self.initialize()
         
     def initialize(self):
-        self.mode = "combat"
+        self.mode = "start"
         self.quit = False
         self.turn = 1
         self.nextLevel = 100
@@ -152,13 +152,21 @@ class Game:
 
     def startResolve(self, action):
         if action == "L":            
-            print("load")
+            load = self.loadSave()
+            self.player = Player(load["player"]["name"], load["player"])
+            self.player.loadItems(load["items"])
+            for i in load["game"]:
+                setattr(self, i, load["game"][i])
+            self.room = Room(self.player)
+            self.monster = Monster(self.level)
+            self.mode = "combat"
         elif action == "N":
             print("Choose a name:")
             name = input()
             self.player = Player(name)
             self.room = Room(self.player)
             self.monster = Monster(self.level)
+            self.mode = "combat"
         else:
             return False
         return True
@@ -207,9 +215,11 @@ class Game:
         elif action == "I":
             self.mode = "inventory"
         elif action == "S":
-            with open('save.txt', 'w') as outfile:  
-                json.dump(self.player, outfile)
-            self.quit = True
+            self.createSave()
+            print("<C>ontinue or <Q>uit?")
+            choice = input()
+            if len(choice) > 0 and choice[0].upper() == "Q":
+                self.quit = True
         else:
             return False
         return True
@@ -224,7 +234,24 @@ class Game:
 
     def inventoryResolve(self, action):
         if action == "E":
-            print("equip")
+            print("Which item do you wish to equip?")
+            complete = False
+            while not complete:
+                itemNum = input()
+                if itemNum == "":
+                    complete = True
+                else:
+                    try:
+                        i = int(itemNum) - 1
+                        try:
+                            item = self.player.items[i]
+                            self.player.equipItem(i)
+                            complete = True
+                        except IndexError:
+                            print("Invalid item number")
+                    except ValueError:
+                        #Handle the exception
+                        print("Please enter an integer")
         if action == "C":
             self.mode = "peace"
         return True
@@ -244,6 +271,31 @@ class Game:
         self.printStats()
         self.printResolution()
         self.takeInput()
+
+    def createSave(self):
+        saveObj = {
+            "player": dict(self.player.__dict__),
+            "room": dict(self.room.__dict__),
+            "game": {
+                "turn": self.turn,
+                "nextLevel": self.nextLevel,
+                "level": self.level
+            }
+        }
+
+        # make player items serializable
+        saveObj["items"] = []
+        for item in saveObj["player"]["items"]:
+            saveObj["items"].append(item.__dict__)
+        del saveObj["player"]["items"]
+
+        # save the file
+        with open('save.txt', 'w') as outfile:  
+                json.dump(saveObj, outfile)
+
+    def loadSave(self):
+        with open('save.txt') as json_file:  
+            return json.load(json_file)
 
 clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
 coloramaInit(autoreset=True)

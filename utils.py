@@ -16,6 +16,10 @@ class Utils:
 
         for row in data:
             out = ""
+            if row["_color"]:
+                out += row["_color"]
+
             for field in row:
-                out += (row[field]).ljust(cellWidth)
+                if not field == "_color":
+                    out += (row[field]).ljust(cellWidth)
             print(out)

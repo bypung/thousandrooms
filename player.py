@@ -1,19 +1,20 @@
 from colorama import Fore, Back, Style
 
 from creature import Creature
+from item import Item
 from utils import Utils
 
 class Player(Creature):
-    def __init__(self, name, hp = 10, xp = 0, level = 1):
-        info = {
-            "name": name
-            "level": level,
-            "nextLevel": level * 1000,
+    def __init__(self, name, saveInfo = None):
+        info = saveInfo if saveInfo else {
+            "name": name,
+            "level": 1,
+            "nextLevel": 1000,
             "atk": 1,
             "ac": 10,
-            "hp": hp,
-            "maxHp": hp,
-            "xp": xp,
+            "hp": 10,
+            "maxHp": 10,
+            "xp": 0,
             "gp": 0,
             "items": [],
             "history": {
@@ -29,6 +30,11 @@ class Player(Creature):
         }
         Creature.__init__(self, info)
 
+    def loadItems(self, itemData):
+        self.items = []
+        for data in itemData:
+            self.items.append(Item(0, data))
+
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
         itemType = item.type
@@ -40,6 +46,19 @@ class Player(Creature):
             item.equipped = True
 
         self.items.append(item)
+        self.applyItems()
+        
+    def equipItem(self, newItemIndex):
+        oldItemIndex = -1
+
+        newItem = self.items[newItemIndex]
+
+        for i, invItem in enumerate(self.items):
+            if invItem.type == newItem.type and invItem.equipped:
+                oldItemIndex = i
+        self.items[oldItemIndex].equipped = False
+        newItem.equipped = True
+
         self.applyItems()
         
     def applyItems(self):
@@ -71,7 +90,7 @@ class Player(Creature):
         self.history["epitaph"] = f"Killed by a {monster.name} on level {level}."
 
     def printStats(self):
-        print(f"{Fore.BLUE}{Style.BRIGHT}Player")
+        print(f"{Fore.BLUE}{Style.BRIGHT}{self.name}")
 
         hpColor = Fore.WHITE
         if self.hp / self.maxHp <= .6:
@@ -106,15 +125,16 @@ class Player(Creature):
 
         items = []
         
-        for item in self.items:
+        for i, item in enumerate(self.items, 1):
             items.append({
-                "Name": f"{item.name}",
+                "_color": Fore.GREEN if item.equipped else Fore.WHITE,
+                "Name": f"{i}) {item.name}",
                 "ATK": f"{item.atk if item.atk > 0 else '--'}",
                 "AC": f"{item.ac if item.ac > 0 else '--'}",
                 "Value": f"{item.level * 10}"
             })
 
-        Utils.printTable(["Name", "ATK", "AC", "Value"], items)
+        Utils.printTable(["   Name", "ATK", "AC", "Value"], items)
 
     def printHistory(self):
         print(f"{Fore.BLUE}{Style.BRIGHT}History")
