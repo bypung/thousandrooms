@@ -1,0 +1,9 @@
+name,level,hd,atk,ac,type,atk_type,resist
+Goblin,1,4,2,2,humanoid,slash,none
+Kobold,1,3,3,1,humanoid,pierce,none
+Dog,1,2,4,2,animal,pierce,none
+Jelly,1,5,1,4,aberration,acid,acid
+Orc,2,4,3,3,humanoid,blunt,none
+Slime,2,7,3,5,aberration,acid,acid
+Wolf,2,3,4,3,animal,pierce,none
+Imp,2,2,5,1,demon,fire,fire
