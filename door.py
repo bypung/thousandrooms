@@ -3,15 +3,21 @@ import random
 from colorama import Fore, Back, Style
 
 class Door:
-    def __init__(self, level, doorType):
-        self.level = level
-        self.type = doorType
-        self.exists = random.choice([True, True, False])
-        self.seen = False
+    def __init__(self, doorType, data = None):
+        if data:
+            for k in data:
+                setattr(self, k, data[k])
+        else:
+            self.type = doorType
+            self.exists = random.choice([True, True, False])
+            self.seen = False
+            self.used = False
 
     def printStats(self):
         print("<< Door >>")
-        print(f"Level: {self.level}")
+
+    def useDoor(self):
+        self.used = True
 
     def printMap(self):
         out = Fore.WHITE if self.exists and self.seen else Fore.BLACK

@@ -23,3 +23,7 @@ class Utils:
                 if not field == "_color":
                     out += (row[field]).ljust(cellWidth)
             print(out)
+
+    @staticmethod
+    def flattenTuple(tuple):
+        return "-".join(tuple)

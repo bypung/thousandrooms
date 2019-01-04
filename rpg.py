@@ -1,6 +1,7 @@
 import random
 import os
 import json
+from types import *
 
 from colorama import init as coloramaInit
 from colorama import Fore, Back, Style
@@ -11,6 +12,7 @@ from player import Player
 from room import Room
 from maps import Map
 from door import Door
+from utils import Utils
 
 class Game:
     def __init__(self):
@@ -22,14 +24,14 @@ class Game:
         self.turn = 1
         self.nextLevel = 100
         self.level = 1
-        self.map = Map()
+        self.map = None
         self.options = {
             "start": "<L>oad, <N>ew",
             "combat": "<A>ttack, <D>efend, <R>un",
             "peace": "<R>est, <C>ontinue, <I>nventory, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
             "inventory": "<E>quip, <C>lose",
-            "map": self.map.getOptions()
+            "map": lambda : self.map.getOptions() if self.map else ""
         }
         self.resolver = {
             "start": self.startResolve,
@@ -84,7 +86,7 @@ class Game:
         print(f"{Style.BRIGHT}Dungeon Level {self.level} - Turn {self.turn}\n")
         self.player.printStats()
         print("")
-        self.room.printStats()
+        self.map.getCurrentRoom().printStats()
 
     def inventoryDisplay(self):
         self.player.printInventory()
@@ -98,7 +100,10 @@ class Game:
         self.monster.printStats()
 
     def printOptions(self):
-        print(f"\n{Style.BRIGHT}{self.options[self.mode]}")
+        options = self.options[self.mode]
+        if type(options) is LambdaType:
+            options = options()
+        print(f"\n{Style.BRIGHT}{options}")
 
     def clearResolution(self):
         self.resolution = []
@@ -169,13 +174,15 @@ class Game:
             self.mode = "peace"
         elif action in ["N", "S", "E", "W"]:
             direction = action.lower()
-            if direction in self.room.doors.keys():
-                self.map.movePlayer(direction)
-                self.incrementTurn()
-                monster = self.map.getCurrentRoom().monster
-                if monster:
-                    self.monster = monster
-                    self.mode = "combat"
+            for key, door in self.map.getCurrentDoors():
+                if key == direction and door.exists:
+                    self.map.movePlayer(direction)
+                    door.useDoor()
+                    self.incrementTurn()
+                    monster = self.map.getCurrentRoom().monster
+                    if monster != None:
+                        self.monster = monster
+                        self.mode = "combat"
         else:
             return False
         return True
@@ -183,17 +190,13 @@ class Game:
     def startResolve(self, action):
         if action == "L":            
             load = self.loadSave()
-            self.player = Player(load["player"]["name"], load["player"])
-            self.player.loadItems(load["items"])
-            for i in load["game"]:
-                setattr(self, i, load["game"][i])
         elif action == "N":
             print("Choose a name:")
             name = input()
             self.player = Player(name)
+            self.map = Map()
         else:
             return False
-        self.room = self.map.getCurrentRoom()
         self.mode = "peace"
         return True
 
@@ -203,11 +206,12 @@ class Game:
                 
             if self.monster.hp <= 0:
                 self.addResolution(f"The {self.monster.name} dies!")
-                self.room.removeMonster()
+                self.map.getCurrentRoom().removeMonster()
                 self.player.incrementHistory("kills")
                 if self.player.hp <= self.player.maxHp * .25:
                     self.player.incrementHistory("risky_win")
                 self.getReward(self.monster.level)
+                self.monster = None
                 self.mode = "peace"
             else:
                 self.monsterAttack(False)  
@@ -222,6 +226,13 @@ class Game:
         elif action == "R":
             self.addResolution("You run away!")
             self.player.incrementHistory("run_away")
+            exits = self.map.getCurrentDoors()
+            escaped = False
+            while not escaped:
+                door = random.choice(exits)
+                if (door[1].used):
+                    self.map.movePlayer(door[0])
+                    escaped = True
             self.mode = "peace"
             self.incrementTurn(10)
         else:
@@ -299,7 +310,7 @@ class Game:
     def createSave(self):
         saveObj = {
             "player": dict(self.player.__dict__),
-            "room": dict(self.room.__dict__),
+            "map": dict(self.map.__dict__),
             "game": {
                 "turn": self.turn,
                 "nextLevel": self.nextLevel,
@@ -313,13 +324,48 @@ class Game:
             saveObj["items"].append(item.__dict__)
         del saveObj["player"]["items"]
 
+        # make map rooms serializable
+        saveObj["map"]["rooms"] = {}
+        saveObj["map"]["monsters"] = {}
+        saveObj["map"]["doors"] = {
+            "ns": {},
+            "ew": {}
+        }
+        for f, floor in enumerate(saveObj["map"]["floors"]):
+            for r in range(self.map.width):
+                for c in range(self.map.width):
+                    saveKey = f"{f}-{r}-{c}"
+                    roomDict = floor["rooms"][(r,c)].__dict__
+                    monster = roomDict["monster"]
+                    saveObj["map"]["monsters"][saveKey] = monster.__dict__ if monster != None else None
+                    del roomDict["monster"]
+                    saveObj["map"]["rooms"][saveKey] = roomDict
+                    try: 
+                        ns = floor["doors"]["ns"][(r,c)].__dict__
+                        saveObj["map"]["doors"]["ns"][saveKey] = ns
+                    except KeyError:
+                        pass
+                    try:
+                        ew = floor["doors"]["ew"][(r,c)].__dict__
+                        saveObj["map"]["doors"]["ew"][saveKey] = ew
+                    except KeyError:
+                        pass
+
+        del saveObj["map"]["floors"]
+
         # save the file
         with open('save.txt', 'w') as outfile:  
                 json.dump(saveObj, outfile)
 
     def loadSave(self):
         with open('save.txt') as json_file:  
-            return json.load(json_file)
+            load = json.load(json_file)
+            self.player = Player(load["player"]["name"], load["player"])
+            self.player.loadItems(load["items"])
+            for i in load["game"]:
+                setattr(self, i, load["game"][i])
+            self.map = Map(load["map"]["numFloors"], load["map"]["width"], load["map"])
+
 
 clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
 coloramaInit(autoreset=True)

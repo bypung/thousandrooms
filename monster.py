@@ -7,21 +7,25 @@ from creature import Creature
 from utils import Utils
 
 class Monster(Creature):
-    def __init__(self, level):
-        info = self.getMonster(level)
-        Creature.__init__(self, info)
+    def __init__(self, level, data = None):
+        if data:
+            for k in data:
+                setattr(self, k, data[k])
+        else:
+            info = self.getMonster(level)
+            Creature.__init__(self, info)
 
-        # improved monsters
-        levelDiff = level - self.level
-        if levelDiff > 0:
-            self.name = f"{monster_list.descriptors[self.type][levelDiff]} {self.name}"
-            self.level += levelDiff
+            # improved monsters
+            levelDiff = level - self.level
+            if levelDiff > 0:
+                self.name = f"{monster_list.descriptors[self.type][levelDiff]} {self.name}"
+                self.level += levelDiff
 
-        self.hp = 0
-        for x in range(level):
-            self.hp += random.randint(1, self.hd)
-        
-        self.ac += 10 + levelDiff
+            self.hp = 0
+            for x in range(level):
+                self.hp += random.randint(1, self.hd)
+            
+            self.ac += 10 + levelDiff
                     
     def printStats(self):
         print(f"{Fore.RED}{Style.BRIGHT}{self.name} ({str(self.level)})")

@@ -4,14 +4,20 @@ from colorama import Fore, Back, Style
 from monster import Monster
 
 class Room:
-    def __init__(self, level):
-        self.level = level
-        self.type = random.choice(["A", "B", "C", "D"])
-        self.doors = {}
-        self.seen = False
-        self.known = False
-        self.monster = None
-        self.trap = None
+    def __init__(self, data = None, monsterData = None):
+        if data:
+            for k in data:
+                setattr(self, k, data[k])
+            if monsterData:
+                self.monster = Monster(monsterData["level"], monsterData)
+            else:
+                self.monster = None
+        else:
+            self.type = random.choice(["A", "B", "C", "D"])
+            self.seen = False
+            self.known = False
+            self.monster = None
+            self.trap = None
 
     def generateContents(self, level):
         if not self.known:
@@ -20,7 +26,7 @@ class Room:
 
     def printStats(self):
         print("<< Room >>")
-        print("Level: " + str(self.level))
+        print("An empty room.")
 
     def getMapIcon(self):
         return " "

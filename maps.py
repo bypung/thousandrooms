@@ -6,76 +6,78 @@ from room import Room
 from door import Door
 
 class Map:
-    def __init__(self, numFloors = 10, width = 10):
+    def __init__(self, numFloors = 10, width = 10, data = None):
         self.floors = []
         self.width = width
         self.numFloors = numFloors
-        self.dungeonLevel = 1
+        self.dungeonLevel = 1 if not data else data["dungeonLevel"]
 
         for f in range(numFloors):
             floor = {
-                "rooms": [],
+                "rooms": {},
                 "doors": {
-                    "ew": [],
-                    "ns": []
+                    "ew": {},
+                    "ns": {}
                 }
             }
 
-            # generate rooms
-            for r in range(width):
-                row = []
-                for c in range(width):
-                    row.append(Room(f + 1))
-                floor["rooms"].append(row)
-            self.floors.append(floor)
+            if data:
+                for r in range(width):
+                    for c in range(width):
+                        # generate rooms
+                        floor["rooms"][(r,c)] = Room(data["rooms"][f"{f}-{r}-{c}"], data["monsters"][f"{f}-{r}-{c}"])
+                        # generate east-west doors
+                        if c < width - 1:
+                            floor["doors"]["ew"][(r,c)] = Door("ew", data["doors"]["ew"][f"{f}-{r}-{c}"])
+                        # generate north-south doors
+                        if r < width - 1:
+                            floor["doors"]["ns"][(r,c)] = Door("ns", data["doors"]["ns"][f"{f}-{r}-{c}"])
+            else:
+                for r in range(width):
+                    for c in range(width):
+                        # generate rooms
+                        floor["rooms"][(r,c)] = (Room())
+                        # generate east-west doors
+                        if c < width - 1:
+                            floor["doors"]["ew"][(r,c)] = Door("ew")
+                        # generate north-south doors
+                        if r < width - 1:
+                            floor["doors"]["ns"][(r,c)] = Door("ns")
 
-            # generate east-west doors
-            for r in range(width):
-                row = []
-                for c in range(width - 1):
-                    row.append(Door(f + 1, "ew"))
-                floor["doors"]["ew"].append(row)
-            self.floors.append(floor)
+                # connect rooms and doors
+                for r in range(width):
+                    for c in range(width):
+                        doorList = []
+                        if r > 0:
+                            doorList.append(floor["doors"]["ns"][(r-1,c)])
+                        if r < self.width - 1:
+                            doorList.append(floor["doors"]["ns"][(r,c)])
+                        if c > 0:
+                            doorList.append(floor["doors"]["ew"][(r,c-1)])
+                        if c < self.width - 1:
+                            doorList.append(floor["doors"]["ew"][(r,c)])
 
-            # generate north-south doors
-            for r in range(width - 1):
-                row = []
-                for c in range(width):
-                    row.append(Door(f + 1, "ns"))
-                floor["doors"]["ns"].append(row)
-
-            # connect rooms and doors
-            for r in range(width):
-                for c in range(width):
-                    # add doors to room object
-                    room = floor["rooms"][r][c]
-                    if r > 0:
-                        room.doors["n"] = floor["doors"]["ns"][r-1][c]
-                    if r < self.width - 1:
-                        room.doors["s"] = floor["doors"]["ns"][r][c]
-                    if c > 0:
-                        room.doors["w"] = floor["doors"]["ew"][r][c-1]
-                    if c < self.width - 1:
-                        room.doors["e"] = floor["doors"]["ew"][r][c]
-
-                    # check for disconnected room and fix it
-                    connected = False
-                    for d in room.doors:
-                        if room.doors[d].exists:
-                            connected = True
-                    if not connected:
-                        room.doors[random.choice(list(room.doors))].exists = True
+                        # check for disconnected room and fix it
+                        connected = False
+                        for d in doorList:
+                            if d.exists:
+                                connected = True
+                        if not connected:
+                            random.choice(doorList).exists = True
             
             self.floors.append(floor)
 
-        self.setPlayerPosition(0, -1, -1)
+        if data:
+            self.playerPosition = data["playerPosition"]
+        else:
+            self.setPlayerPosition(0, -1, -1)
 
     def getCurrentRoom(self):
         pp = self.playerPosition
-        return self.floors[pp[0]]["rooms"][pp[1]][pp[2]]
+        return self.floors[pp[0]]["rooms"][(pp[1],pp[2])]
 
     def getRoom(self, floor, row, col):
-        return self.floors[floor]["rooms"][row][col]
+        return self.floors[floor]["rooms"][(row, col)]
 
     def movePlayer(self, direction):
         newPos = list(self.playerPosition)
@@ -109,8 +111,7 @@ class Map:
         if startRoom:
             room.monster = None
         
-        for key in room.doors.keys():
-            door = room.doors[key]
+        for key, door in self.getCurrentDoors():
             door.seen = True
             if (door.exists):
                 if key == "n":
@@ -124,6 +125,8 @@ class Map:
 
     def printFloor(self):
         floor = self.playerPosition[0]
+
+        ppSlug = f"[{self.playerPosition[1]},{self.playerPosition[2]}]"
         print(f"{Fore.MAGENTA}{Style.BRIGHT}Dungeon Level {floor + 1}")
 
         header = f"{Style.DIM}  "
@@ -136,34 +139,47 @@ class Map:
         for r in range(self.width):
             sys.stdout.write(f"{Style.DIM}{r} {Style.NORMAL}")
             for c in range(self.width):
-                room = self.floors[floor]["rooms"][r][c]
+                room = self.floors[floor]["rooms"][(r,c)]
                 isCurrentRoom = self.playerPosition[1] == r and self.playerPosition[2] == c
                 sys.stdout.write(room.printMap(isCurrentRoom))
                 if c < self.width - 1:
-                    door = self.floors[floor]["doors"]["ew"][r][c]
+                    door = self.floors[floor]["doors"]["ew"][(r,c)]
                     sys.stdout.write(door.printMap())
             if r < self.width - 1:
                 sys.stdout.write("\n  ")
                 for c in range(self.width):
-                    door = self.floors[floor]["doors"]["ns"][r][c]
+                    door = self.floors[floor]["doors"]["ns"][(r,c)]
                     sys.stdout.write(door.printMap())
                     if c < self.width - 1:
                         sys.stdout.write("  ")
             sys.stdout.write("\n")
 
+    def getCurrentDoors(self):
+        floor = self.floors[self.playerPosition[0]]
+        r = self.playerPosition[1]
+        c = self.playerPosition[2]
+        out = []
+        if r > 0:
+            out.append(("n", floor["doors"]["ns"][(r-1,c)]))
+        if r < self.width - 1:
+            out.append(("s", floor["doors"]["ns"][(r,c)]))
+        if c > 0:
+            out.append(("w", floor["doors"]["ew"][(r,c-1)]))
+        if c < self.width - 1:
+            out.append(("e", floor["doors"]["ew"][(r,c)]))
+        return out
+
     def getOptions(self):
         out = f"{Style.BRIGHT}"
-        room = self.getCurrentRoom()
-        for key in room.doors.keys():
-            door = room.doors[key]
+        for direction, door in self.getCurrentDoors():
             if (door.exists):
-                if key == "n":
+                if direction == "n":
                     out += "<N>orth, "
-                if key == "s":
+                if direction == "s":
                     out += "<S>outh, "
-                if key == "e":
+                if direction == "e":
                     out += "<E>ast, "
-                if key == "w":
+                if direction == "w":
                     out += "<W>est, "
         out += "<L>isten, <S>earch, <B>ack"
         return out
