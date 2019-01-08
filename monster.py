@@ -18,7 +18,12 @@ class Monster(Creature):
             # improved monsters
             levelDiff = level - self.level
             if levelDiff > 0:
-                self.name = f"{monster_list.descriptors[self.type][levelDiff]} {self.name}"
+                descriptor = monster_list.descriptors[self.type][levelDiff]
+                try:
+                    descriptor = monster_list.descriptors[self.subtype][levelDiff]
+                except KeyError:
+                    pass
+                self.name = f"{descriptor} {self.name}"
                 self.level += levelDiff
 
             self.hp = 0

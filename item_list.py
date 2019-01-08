@@ -1,80 +1,259 @@
-items = {
-    "weapon": [
-        {
-            "type": "weapon",
-            "name": "Dagger",
-            "ac": 0,
-            "atk": 1
-        },
-        {
-            "type": "weapon",
-            "name": "Axe",
-            "ac": 0,
-            "atk": 2
-        },
-        {
-            "type": "weapon",
-            "name": "Sword",
-            "ac": 0,
-            "atk": 3
-        },
-        {
-            "type": "weapon",
-            "name": "Halberd",
-            "ac": 0,
-            "atk": 4
-        }
-    ],
-    "armor": [
-        {
-            "type": "armor",
-            "name": "Cloth Armor",
-            "ac": 1,
-            "atk": 0
-        },
-        {
-            "type": "armor",
-            "name": "Leather Armor",
-            "ac": 2,
-            "atk": 0
-        },
-        {
-            "type": "armor",
-            "name": "Chain Armor",
-            "ac": 3,
-            "atk": 0
-        },
-        {
-            "type": "armor",
-            "name": "Plate Armor",
-            "ac": 4,
-            "atk": 0
-        }
-    ],
+items = [
+  {
+    "kind": "weapon",
+    "name": "Club",
+    "level": 1,
+    "ac": "",
+    "atk": 1,
+    "type": "blunt",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Hatchet",
+    "level": 1,
+    "ac": "",
+    "atk": 1,
+    "type": "slash",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Knife",
+    "level": 1,
+    "ac": "",
+    "atk": 1,
+    "type": "pierce",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Axe",
+    "level": 2,
+    "ac": "",
+    "atk": 2,
+    "type": "slash",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Mace",
+    "level": 2,
+    "ac": "",
+    "atk": 2,
+    "type": "blunt",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Dagger",
+    "level": 2,
+    "ac": "",
+    "atk": 2,
+    "type": "pierce",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Sword",
+    "level": 3,
+    "ac": "",
+    "atk": 3,
+    "type": "slash",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Warhammer",
+    "level": 3,
+    "ac": "",
+    "atk": 3,
+    "type": "blunt",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Spear",
+    "level": 3,
+    "ac": "",
+    "atk": 3,
+    "type": "pierce",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Claymore",
+    "level": 4,
+    "ac": "",
+    "atk": 4,
+    "type": "slash",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Morningstar",
+    "level": 4,
+    "ac": "",
+    "atk": 4,
+    "type": "blunt",
+    "ability": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Trident",
+    "level": 4,
+    "ac": "",
+    "atk": 4,
+    "type": "pierce",
+    "ability": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Robe",
+    "level": 1,
+    "ac": 1,
+    "atk": "",
+    "type": "cloth",
+    "ability": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Cuirboulli",
+    "level": 2,
+    "ac": 2,
+    "atk": "",
+    "type": "leather",
+    "ability": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Maille Hauberk",
+    "level": 2,
+    "ac": 2,
+    "atk": "",
+    "type": "metal",
+    "ability": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Breastplate",
+    "level": 2,
+    "ac": 2,
+    "atk": "",
+    "type": "metal",
+    "ability": ""
+  },
+  {
+    "kind": "ring",
+    "name": "Ring of Shielding",
+    "level": 1,
+    "ac": 1,
+    "atk": "",
+    "type": "",
+    "ability": ""
+  },
+  {
+    "kind": "ring",
+    "name": "Traveling",
+    "level": 2,
+    "ac": "",
+    "atk": "",
+    "type": "",
+    "ability": "traveling"
+  },
+  {
+    "kind": "ring",
+    "name": "Running",
+    "level": 3,
+    "ac": "",
+    "atk": "",
+    "type": "",
+    "ability": "running"
+  },
+  {
+    "kind": "ring",
+    "name": "Regeneration",
+    "level": 4,
+    "ac": "",
+    "atk": "",
+    "type": "",
+    "ability": "regeneration"
+  }
+]
+
+descriptors = {
+    "weapon": {
+        "pierce": [
+            "Pointy",
+            "Sharp",
+            "Keen",
+            "Barbed"
+        ],
+        "slash": [
+            "Honed",
+            "Jagged",
+            "Razor",
+            "Gleaming"
+        ],
+        "blunt": [
+            "Hardened",
+            "Faceted",
+            "Massive",
+            "Crushing"
+        ]
+    },
+    "armor": {
+        "cloth": [
+            "Patterned",
+            "Silk",
+            "Embroidered",
+            "Brocade"
+        ],
+        "leather": [
+            "Waxed",
+            "Embossed",
+            "Tooled",
+            "Gilded"
+        ],
+        "metal": [
+            "Iron",
+            "Steel",
+            "Engraved",
+            "Mithril"
+        ]
+    },
     "ring": [
-        {
-            "type": "ring",
-            "name": "Copper Ring",
-            "ac": 1,
-            "atk": 1
-        },
-        {
-            "type": "ring",
-            "name": "Silver Ring",
-            "ac": 2,
-            "atk": 2
-        },
-        {
-            "type": "ring",
-            "name": "Gold Ring",
-            "ac": 3,
-            "atk": 3
-        },
-        {
-            "type": "ring",
-            "name": "Platinum Ring",
-            "ac": 4,
-            "atk": 4
-        }
+        "Shiny",
+        "Golden",
+        "Jeweled",
+        "Glowing"
+    ]
+}
+
+atkVerb = {
+    "slash": [
+        "slash",
+        "cut",
+        "hack"
+    ],
+    "pierce": [
+        "stab",
+        "poke",
+        "impale"
+    ],
+    "blunt": [
+        "bash",
+        "smash",
+        "crush"
+    ],
+    "acid": [
+        "dissolve",
+        "burn",
+        "melt"
+    ],
+    "fire": [
+        "scorch",
+        "burn",
+        "char"
     ]
 }

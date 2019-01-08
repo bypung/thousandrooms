@@ -11,8 +11,24 @@ class Creature:
     def calculateDam(self):
         self.dam = self.atk + (self.level * 2)
 
-    def damage(self, value):
-        self.hp -= value
+    def damage(self, value, type):
+        damage = value
+        try:
+            if self.resist == type:
+                damage = value // 2
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
+        try:
+            if self.vulnerability == type:
+                damage = value * 2
+        except KeyError:
+            pass
+        except AttributeError:
+            pass
+        self.hp -= damage
+        return damage
         
     def heal(self, value = 0):
         if value == 0:

@@ -1,8 +1,10 @@
+import random
 from colorama import Fore, Back, Style
 
 from creature import Creature
 from item import Item
 from utils import Utils
+import item_list
 
 class Player(Creature):
     def __init__(self, name, saveInfo = None):
@@ -11,12 +13,14 @@ class Player(Creature):
             "level": 1,
             "nextLevel": 1000,
             "atk": 1,
+            "atkType": 'blunt',
             "ac": 10,
             "hp": 10,
             "maxHp": 10,
             "xp": 0,
             "gp": 0,
             "items": [],
+            "abilities": [],
             "history": {
                 "rest": 0,
                 "risky_win": 0,
@@ -37,10 +41,10 @@ class Player(Creature):
 
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
-        itemType = item.type
+        kind = item.kind
         found = False
         for invItem in self.items:
-            if invItem.type == itemType:
+            if invItem.kind == kind:
                 found = True
         if not found:
             item.equipped = True
@@ -54,7 +58,7 @@ class Player(Creature):
         newItem = self.items[newItemIndex]
 
         for i, invItem in enumerate(self.items):
-            if invItem.type == newItem.type and invItem.equipped:
+            if invItem.kind == newItem.kind and invItem.equipped:
                 oldItemIndex = i
         self.items[oldItemIndex].equipped = False
         newItem.equipped = True
@@ -64,11 +68,19 @@ class Player(Creature):
     def applyItems(self):
         self.atk = 1
         self.ac = 10
+        self.abilities = []
+        self.atkType = "blunt"
 
         for item in self.items:
             if item.equipped:
-                self.atk += item.atk
-                self.ac += item.ac
+                if item.atk:
+                    self.atk += item.atk
+                if item.ac:
+                    self.ac += item.ac
+                if item.ability:
+                    self.abilities.append(item.ability.lower())
+                if item.kind == "weapon":
+                    self.atkType = item.type
 
         super().calculateDam()
 
@@ -83,6 +95,17 @@ class Player(Creature):
         else:
             return False
 
+    def getAbilityLevel(self, ability):
+        items = [item for item in self.items if item.equipped and item.ability == ability]
+        level = 0
+        for item in items:
+            level = max(level, item.level)  
+        return level
+
+    def getAtkVerb(self):
+        verbs = item_list.atkVerb[self.atkType]
+        return random.choice(verbs)
+        
     def incrementHistory(self, field, value = 1):
         self.history[field] += value
 
@@ -129,8 +152,9 @@ class Player(Creature):
             items.append({
                 "_color": Fore.GREEN if item.equipped else Fore.WHITE,
                 "Name": f"{i}) {item.name}",
-                "ATK": f"{item.atk if item.atk > 0 else '--'}",
-                "AC": f"{item.ac if item.ac > 0 else '--'}",
+                "ATK": f"{item.atk if item.atk else '--'}",
+                "Type": f"{item.type}",
+                "AC": f"{item.ac if item.ac else '--'}",
                 "Value": f"{item.level * 10}"
             })
 

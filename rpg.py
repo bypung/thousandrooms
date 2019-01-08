@@ -1,6 +1,8 @@
 import random
+import math
 import os
 import json
+import copy
 from types import *
 
 from colorama import init as coloramaInit
@@ -52,6 +54,8 @@ class Game:
         self.clearResolution()
         self.nextTurn()
 
+### NUMBER METHODS ###
+
     def rollDie(self, size):
         return random.randint(1, size)
     
@@ -66,12 +70,26 @@ class Game:
             self.incrementDungeonLevel()
             self.addResolution(f"{Fore.RED}The dungeon seems more dangerous...")
     
+### PRINTING METHODS ###
+
     def printRoll(self, roll, target):
         self.addResolution(f"[{roll} vs {target}]")
         
     def printStats(self):
         displayFunc = self.display[self.mode]
         displayFunc()
+
+    def clearResolution(self):
+        self.resolution = []
+
+    def addResolution(self, text):
+        self.resolution.append(text)
+
+    def printResolution(self):
+        if len(self.resolution) > 0:
+            print("\n" + "\n".join(self.resolution))
+
+### DISPLAY METHODS ###
 
     def startDisplay(self):
         print(f"{Style.BRIGHT}Welcome To The Dungeon!\n")
@@ -105,15 +123,7 @@ class Game:
             options = options()
         print(f"\n{Style.BRIGHT}{options}")
 
-    def clearResolution(self):
-        self.resolution = []
-
-    def addResolution(self, text):
-        self.resolution.append(text)
-
-    def printResolution(self):
-        if len(self.resolution) > 0:
-            print("\n" + "\n".join(self.resolution))
+### COMBAT METHODS ###
 
     def playerAttack(self):
         atkRoll = self.rollDie(20) + self.player.atk
@@ -122,9 +132,13 @@ class Game:
             
         if atkRoll >= monsterDefense:
             damRoll = self.rollDie(self.player.dam)
-            self.addResolution(f"{Fore.GREEN}You hit for {damRoll}")
-            self.monster.damage(damRoll)
-            self.player.incrementHistory("dmg_done", damRoll)
+            self.addResolution(f"{Fore.GREEN}You {self.player.getAtkVerb()} the {self.monster.name} for {damRoll}")
+            damage = self.monster.damage(damRoll, self.player.atkType)
+            if damage < damRoll:
+                self.addResolution(f"{Fore.MAGENTA}Your weapon is not very effective.")
+            if damage > damRoll:
+                self.addResolution(f"{Fore.CYAN}Your weapon is very effective.")
+            self.player.incrementHistory("dmg_done", damage)
         else:
             self.addResolution(f"{Fore.WHITE}You miss!")
         # self.printRoll(atkRoll, monsterDefense)
@@ -139,7 +153,7 @@ class Game:
         if atkRoll >= playerDefense:
             damRoll = self.rollDie(self.monster.dam)
             self.addResolution(f"{Fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {Style.BRIGHT}{damRoll}")
-            self.player.damage(damRoll)
+            self.player.damage(damRoll, self.monster.atk_type)
             self.player.incrementHistory("dmg_taken", damRoll)
         else:
             self.addResolution(f"{Fore.WHITE}The {self.monster.name} misses!")
@@ -159,7 +173,7 @@ class Game:
             self.addResolution(f"{Fore.YELLOW}You gained a level!")
 
         item = Item(self.monster.level)
-        if item.type != "none":
+        if item.kind:
             self.player.addItem(item)
             self.addResolution(f"{Fore.YELLOW}You found: {item.name}")
 
@@ -168,6 +182,8 @@ class Game:
             self.addResolution(f"{Fore.RED}{Style.BRIGHT}You die!")
             self.player.setEpitaph(self.monster, self.level)
             self.mode = "gameOver"
+
+### RESOLUTION METHODS ###
 
     def mapResolve(self, action):
         if action == "B":
@@ -178,7 +194,12 @@ class Game:
                 if key == direction and door.exists:
                     self.map.movePlayer(direction)
                     door.useDoor()
-                    self.incrementTurn()
+                    if 'traveling' in self.player.abilities:
+                        travelRoll = self.rollDie(10)
+                        if travelRoll > self.player.getAbilityLevel('traveling'):
+                            self.incrementTurn()
+                    else:
+                        self.incrementTurn()
                     monster = self.map.getCurrentRoom().monster
                     if monster != None:
                         self.monster = monster
@@ -224,7 +245,6 @@ class Game:
             self.deathCheck()
             self.incrementTurn()
         elif action == "R":
-            self.addResolution("You run away!")
             self.player.incrementHistory("run_away")
             exits = self.map.getCurrentDoors()
             escaped = False
@@ -234,7 +254,12 @@ class Game:
                     self.map.movePlayer(door[0])
                     escaped = True
             self.mode = "peace"
-            self.incrementTurn(10)
+            if 'running' in self.player.abilities:
+                self.incrementTurn(10 - self.player.getAbilityLevel('running'))
+                self.addResolution(f"{Fore.GREEN}You run away very quickly!")
+            else:
+                self.incrementTurn(10)
+                self.addResolution("You run away!")
         else:
             return False
         return True
@@ -243,8 +268,12 @@ class Game:
         if action == "C":
             self.mode = "map"
         elif action == "R":
-            timeToRest = (self.player.maxHp - self.player.hp) * 2
             self.addResolution("You take some time to recover...")
+            restFactor = 2
+            if 'regeneration' in self.player.abilities:
+                restFactor -= 0.2 * self.player.getAbilityLevel('regeneration')
+                self.addResolution(f"{Fore.GREEN}You heal quickly...")
+            timeToRest = math.floor((self.player.maxHp - self.player.hp) * restFactor)
             self.player.heal()
             self.player.incrementHistory("rest")
             self.incrementTurn(timeToRest)
@@ -292,6 +321,8 @@ class Game:
             self.mode = "peace"
         return True
 
+### LIFECYCLE METHODS ###
+
     def takeInput(self):
         self.printOptions()
         resolved = False
@@ -309,8 +340,8 @@ class Game:
 
     def createSave(self):
         saveObj = {
-            "player": dict(self.player.__dict__),
-            "map": dict(self.map.__dict__),
+            "player": dict(copy.deepcopy(self.player).__dict__),
+            "map": dict(copy.deepcopy(self.map).__dict__),
             "game": {
                 "turn": self.turn,
                 "nextLevel": self.nextLevel,
