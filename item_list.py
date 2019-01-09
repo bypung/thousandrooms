@@ -187,19 +187,22 @@ descriptors = {
             "Pointy",
             "Sharp",
             "Keen",
-            "Barbed"
+            "Barbed",
+            "Piercing"
         ],
         "slash": [
             "Honed",
             "Jagged",
             "Razor",
-            "Gleaming"
+            "Gleaming",
+            "Vorpal"
         ],
         "blunt": [
             "Hardened",
             "Faceted",
             "Massive",
-            "Crushing"
+            "Crushing",
+            "Unstoppable"
         ]
     },
     "armor": {
@@ -207,26 +210,30 @@ descriptors = {
             "Patterned",
             "Silk",
             "Embroidered",
-            "Brocade"
+            "Brocade",
+            "Mageweave"
         ],
         "leather": [
             "Waxed",
             "Embossed",
             "Tooled",
-            "Gilded"
+            "Gilded",
+            "Dragonscale"
         ],
         "metal": [
             "Iron",
             "Steel",
             "Engraved",
-            "Mithril"
+            "Mithril",
+            "Adamantine"
         ]
     },
     "ring": [
         "Shiny",
         "Golden",
         "Jeweled",
-        "Glowing"
+        "Glowing",
+        "Elvish"
     ]
 }
 

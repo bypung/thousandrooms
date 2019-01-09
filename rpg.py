@@ -14,6 +14,7 @@ from player import Player
 from room import Room
 from maps import Map
 from door import Door
+from store import Store
 from utils import Utils
 
 class Game:
@@ -33,8 +34,8 @@ class Game:
             "combat": "<A>ttack, <D>efend, <R>un",
             "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
-            "inventory": lambda : Item.getOptions(self.player, self.itemList["currPage"], self.itemList["pageSize"]) if self.player else "",
-            "store": lambda : Item.getOptions(self.store, self.itemList["currPage"], self.itemList["pageSize"]) if self.store else "",
+            "inventory": lambda : Item.getOptions(self.player, self.itemList) if self.player else "",
+            "store": lambda : Item.getOptions(self.store, self.itemList) if self.store else "",
             "map": lambda : self.map.getOptions() if self.map else ""
         }
         self.resolver = {
@@ -43,6 +44,7 @@ class Game:
             "peace": self.peaceResolve,
             "gameOver": self.gameOverResolve,
             "inventory": self.inventoryResolve,
+            "store": self.storeResolve,
             "map": self.mapResolve
         }
         self.display = {
@@ -51,6 +53,7 @@ class Game:
             "peace": self.peaceDisplay,
             "gameOver": self.gameOverDisplay,
             "inventory": self.inventoryDisplay,
+            "store": self.storeDisplay,
             "map": self.mapDisplay
         }
         self.initItemList()
@@ -61,6 +64,7 @@ class Game:
         self.itemList = {
             "currPage": 0,
             "pageSize": 10,
+            "filter": "all",
             "storeMode": "buy"
         }
 
@@ -118,7 +122,10 @@ class Game:
         room.printStats(self.map.getCurrentDoors())
 
     def inventoryDisplay(self):
-        self.player.printInventory()
+        Item.printInventory(self.player, self.itemList)
+
+    def storeDisplay(self):
+        Item.printInventory(self.store, self.itemList)
 
     def mapDisplay(self):
         self.map.printFloor(self.turn)
@@ -331,6 +338,49 @@ class Game:
                     try:
                         i = int(itemNum) - 1
                         try:
+                            item = Item.getFilteredItem(self.player, self.itemList, i)
+                            if item:
+                                self.player.equipItem(item)
+                                complete = True
+                        except IndexError:
+                            print("Invalid item number")
+                    except ValueError:
+                        #Handle the exception
+                        print("Please enter an integer")
+        if action == "P":
+            self.itemList["currPage"] -= 1
+        if action == "N":
+            self.itemList["currPage"] += 1
+        if action == "F":
+            print("Filter: <W>eapons, <A>rmor, <R>ings, <U>sable, <E>verything")
+            choice = input()
+            filterValue = "all"
+            if choice.lower() == "w":
+                filterValue = "weapon"
+            if choice.lower() == "a":
+                filterValue = "armor"
+            if choice.lower() == "r":
+                filterValue = "ring"
+            if choice.lower() == "u":
+                filterValue = "usable"
+            self.itemList["currPage"] = 0
+            self.itemList["filter"] = filterValue
+        if action == "C":
+            self.mode = "peace"
+        return True
+
+    def storeResolve(self, action):
+        if action == "B":
+            print("Which item do you wish to buy?")
+            complete = False
+            while not complete:
+                itemNum = input()
+                if itemNum == "":
+                    complete = True
+                else:
+                    try:
+                        i = int(itemNum) - 1
+                        try:
                             item = self.player.items[i]
                             self.player.equipItem(i)
                             complete = True
@@ -339,7 +389,9 @@ class Game:
                     except ValueError:
                         #Handle the exception
                         print("Please enter an integer")
-        if action == "C":
+        if action == "S":
+            print("sell")
+        if action == "L":
             self.mode = "peace"
         return True
 
@@ -414,11 +466,11 @@ class Game:
         del saveObj["map"]["floors"]
 
         # save the file
-        with open('save.txt', 'w') as outfile:  
+        with open('save.json', 'w') as outfile:  
                 json.dump(saveObj, outfile)
 
     def loadSave(self):
-        with open('save.txt') as json_file:  
+        with open('save.json') as json_file:  
             load = json.load(json_file)
             self.player = Player(load["player"]["name"], load["player"])
             self.player.loadItems(load["items"])

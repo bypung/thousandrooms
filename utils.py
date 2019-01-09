@@ -19,8 +19,10 @@ class Utils:
 
         for row in data:
             out = ""
-            if row["_color"]:
+            try:
                 out += row["_color"]
+            except KeyError:
+                pass
             dataFields = [key for key in list(row.keys()) if key != "_color"]
             for i, field in enumerate(dataFields):
                 out += (row[field]).ljust(cellWidth[i])

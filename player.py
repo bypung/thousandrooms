@@ -8,6 +8,14 @@ import item_list
 
 class Player(Creature):
     def __init__(self, name, saveInfo = None):
+        self.xp = 0
+        self.gp = 0
+        self.hp = 0
+        self.maxHp = 0
+        self.history = {}
+        self.name = name
+        self.nextLevel = 100
+        
         info = saveInfo if saveInfo else {
             "name": name,
             "level": 1,
@@ -52,15 +60,10 @@ class Player(Creature):
         self.items.append(item)
         self.applyItems()
         
-    def equipItem(self, newItemIndex):
-        oldItemIndex = -1
-
-        newItem = self.items[newItemIndex]
-
-        for i, invItem in enumerate(self.items):
+    def equipItem(self, newItem):
+        for invItem in self.items:
             if invItem.kind == newItem.kind and invItem.equipped:
-                oldItemIndex = i
-        self.items[oldItemIndex].equipped = False
+                invItem.equipped = False
         newItem.equipped = True
 
         self.applyItems()
@@ -145,23 +148,6 @@ class Player(Creature):
             if item.equipped:
                 itemNames.append(item.displayName)
         print("Equipped: " + ", ".join(itemNames))
-
-    def printInventory(self):
-        print(f"{Fore.BLUE}{Style.BRIGHT}Inventory")
-
-        items = []
-        
-        for i, item in enumerate(self.items, 1):
-            items.append({
-                "_color": Fore.GREEN if item.equipped else Fore.WHITE,
-                "Name": f"{i}) {item.displayName}",
-                "ATK": f"{item.atk if item.atk else '--'}",
-                "Type": f"{item.type}",
-                "AC": f"{item.ac if item.ac else '--'}",
-                "Value": f"{item.level * 10}"
-            })
-
-        Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], items, [30, 8, 12, 8, 8])
 
     def printHistory(self):
         print(f"{Fore.MAGENTA}{Style.BRIGHT}{self.name}")
