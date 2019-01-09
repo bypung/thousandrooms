@@ -1,21 +1,28 @@
-kind,name,level,ac,atk,type,ability
-weapon,Club,1,,1,blunt,
-weapon,Hatchet,1,,1,slash,
-weapon,Knife,1,,1,pierce,
-weapon,Axe,2,,2,slash,
-weapon,Mace,2,,2,blunt,
-weapon,Dagger,2,,2,pierce,
-weapon,Sword,3,,3,slash,
-weapon,Warhammer,3,,3,blunt,
-weapon,Spear,3,,3,pierce,
-weapon,Claymore,4,,4,slash,
-weapon,Morningstar,4,,4,blunt,
-weapon,Trident,4,,4,pierce,
-armor,Robe,1,1,,cloth,
-armor,Cuirboulli,2,2,,leather,
-armor,Maille Hauberk,2,2,,metal,
-armor,Breastplate,2,2,,metal,
-ring,Ring of Shielding,1,1,,,
-ring,Ring,2,,,,Traveling
-ring,Ring,3,,,,Running
-ring,Ring,4,,,,Regeneration
+kind,name,level,ac,atk,type,ability,effect
+weapon,Club,1,,1,blunt,,
+weapon,Hatchet,1,,1,slash,,
+weapon,Knife,1,,1,pierce,,
+weapon,Axe,2,,2,slash,,
+weapon,Mace,2,,2,blunt,,
+weapon,Dagger,2,,2,pierce,,
+weapon,Sword,3,,3,slash,,
+weapon,Warhammer,3,,3,blunt,,
+weapon,Spear,3,,3,pierce,,
+weapon,Claymore,4,,4,slash,,
+weapon,Morningstar,4,,4,blunt,,
+weapon,Trident,4,,4,pierce,,
+armor,Robe,1,1,,cloth,,
+armor,Cuirboulli,2,2,,leather,,
+armor,Maille Hauberk,2,2,,metal,,
+armor,Breastplate,2,2,,metal,,
+ring,Ring of Shielding,1,1,,,,
+ring,Ring,2,,,,traveling,
+ring,Ring,3,,,,running,
+ring,Ring,4,,,,regeneration,
+usable,Potion,1,,,,,healing
+usable,Scroll,1,,,,,digging
+usable,Scroll,1,,,,,blinking
+usable,Scroll,2,,,,,teleport
+usable,Potion,2,,,,,invisibility
+usable,Scroll,2,,,,,shopping
+usable,Scroll,4,,,,,time warp

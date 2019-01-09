@@ -31,7 +31,7 @@ class Game:
         self.store = None
         self.options = {
             "start": "<L>oad, <N>ew",
-            "combat": "<A>ttack, <D>efend, <R>un",
+            "combat": "<A>ttack, <D>efend, <U>se Item, <R>un",
             "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
             "inventory": lambda : Item.getOptions(self.player, self.itemList) if self.player else "",
@@ -56,6 +56,9 @@ class Game:
             "store": self.storeDisplay,
             "map": self.mapDisplay
         }
+        self.effectResolvers = {
+            "healing": self.healingResolve
+        }
         self.initItemList()
         self.clearResolution()
         self.nextTurn()
@@ -65,7 +68,7 @@ class Game:
             "currPage": 0,
             "pageSize": 15,
             "filter": "all",
-            "storeMode": "buy"
+            "mode": "peace"
         }
 
 ### NUMBER METHODS ###
@@ -194,11 +197,50 @@ class Game:
             self.player.addItem(item)
             self.addResolution(f"{Fore.YELLOW}You found: {item.displayName}")
 
-    def deathCheck(self):
+    def monsterDeathCheck(self):
+        if self.monster.hp <= 0:
+            self.addResolution(f"The {self.monster.name} dies!")
+            self.map.getCurrentRoom().removeMonster()
+            self.player.incrementHistory("kills")
+            if self.player.hp <= self.player.maxHp * .25:
+                self.player.incrementHistory("risky_win")
+            self.getReward(self.monster.level)
+            self.monster = None
+            self.mode = "peace"
+        else:
+            self.monsterAttack(False)  
+            self.playerDeathCheck()
+                
+    def playerDeathCheck(self):
         if self.player.hp <= 0:
             self.addResolution(f"{Fore.RED}{Style.BRIGHT}You die!")
             self.player.killedBy(self.monster, self.level)
             self.mode = "gameOver"
+
+### ITEM METHODS ###
+
+    def resolveCombatItem(self, item):
+        effect = item.effect
+        escaped = False
+
+        try:
+            escaped = self.effectResolvers[effect]()
+        except KeyError:
+            pass
+
+        if not escaped:
+            self.monsterDeathCheck()
+
+        self.mode = "combat"
+        self.incrementTurn()
+
+    def resolvePeaceItem(self, item):
+        print("peace item")
+
+    def healingResolve(self):
+        self.player.heal(self.player.maxHp // 2)
+        self.addResolution(f"{Fore.GREEN}You feel much better!")
+        return False
 
 ### RESOLUTION METHODS ###
 
@@ -248,27 +290,19 @@ class Game:
 
     def combatResolve(self, action):
         if action == "A":            
-            self.playerAttack()
-                
-            if self.monster.hp <= 0:
-                self.addResolution(f"The {self.monster.name} dies!")
-                self.map.getCurrentRoom().removeMonster()
-                self.player.incrementHistory("kills")
-                if self.player.hp <= self.player.maxHp * .25:
-                    self.player.incrementHistory("risky_win")
-                self.getReward(self.monster.level)
-                self.monster = None
-                self.mode = "peace"
-            else:
-                self.monsterAttack(False)  
-                self.deathCheck()
+            self.playerAttack()      
+            self.monsterDeathCheck()
             self.incrementTurn()
         elif action == "D":
             self.addResolution("You defend yourself!")
-
             self.monsterAttack(True)
-            self.deathCheck()
+            self.playerDeathCheck()
             self.incrementTurn()
+        elif action == "U":
+            self.mode = "inventory"
+            self.initItemList()
+            self.itemList["filter"] = "usable"
+            self.itemList["mode"] = "combat"
         elif action == "R":
             self.player.incrementHistory("run_away")
             exits = self.map.getCurrentDoors()
@@ -307,6 +341,7 @@ class Game:
             self.mode = "inventory"
         elif action == "M":
             self.initItemList()
+            self.itemList["mode"] = "buy"
             self.store = Store(self.level)
             self.mode = "store"
         elif action == "S":
@@ -369,6 +404,31 @@ class Game:
             self.itemList["currPage"] += 1
         if action == "F":
             self.filterItems()
+        if action == "U":
+            print("Use which item?")
+            complete = False
+            while not complete:
+                itemNum = input()
+                if itemNum == "":
+                    complete = True
+                else:
+                    try:
+                        i = int(itemNum) - 1
+                        try:
+                            item = Item.getFilteredItem(self.player, self.itemList, i)
+                            used = False
+                            if self.itemList["mode"] == "combat":
+                                used = self.resolveCombatItem(item)
+                            elif self.itemList["mode"] == "manage":
+                                used = self.resolvePeaceItem(item)
+                            if used:
+                                self.player.removeItem(item)
+                            complete = True
+                        except IndexError:
+                            print("Invalid item number")
+                    except ValueError:
+                        #Handle the exception
+                        print("Please enter an integer")
         if action == "C":
             self.mode = "peace"
         return True
@@ -385,8 +445,8 @@ class Game:
                     try:
                         i = int(itemNum) - 1
                         try:
-                            item = self.player.items[i]
-                            self.player.equipItem(i)
+                            item = Item.getFilteredItem(self.store, self.itemList, i)
+                            self.player.addItem(item)
                             complete = True
                         except IndexError:
                             print("Invalid item number")

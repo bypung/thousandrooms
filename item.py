@@ -21,43 +21,54 @@ class Item:
                 for i in info:
                     setattr(self, i, info[i])
 
-                self.displayName = f"{self.name} of {self.ability}" if self.ability else self.name
+                if self.ability:
+                    self.displayName = f"{self.name} of {self.ability.title()}"
+                elif self.effect:
+                    self.displayName = f"{self.name} of {self.effect.title()}"
+                else:
+                    self.displayName = self.name
 
                 # improved items
-                levelDiff = level - self.level
-                if levelDiff > 0:
-                    try:
-                        descriptor = item_list.descriptors[self.kind][levelDiff]
-                    except KeyError:
-                        pass
-                    try:
-                        descriptor = item_list.descriptors[self.kind][self.type][levelDiff]
-                    except KeyError:
-                        pass
-                    except TypeError:
-                        pass
-                    self.displayName = f"{descriptor} {self.displayName}"
-                    self.level += levelDiff
-                    if self.atk:
-                        self.atk += levelDiff
-                    if self.ac:
-                        self.ac += levelDiff
+                if self.kind != "usable":
+                    levelDiff = level - self.level
+                    if levelDiff > 0:
+                        try:
+                            descriptor = item_list.descriptors[self.kind][levelDiff]
+                        except KeyError:
+                            pass
+                        try:
+                            descriptor = item_list.descriptors[self.kind][self.type][levelDiff]
+                        except KeyError:
+                            pass
+                        except TypeError:
+                            pass
+                        self.displayName = f"{descriptor} {self.displayName}"
+                        self.level += levelDiff
+                        if self.atk:
+                            self.atk += levelDiff
+                        if self.ac:
+                            self.ac += levelDiff
 
     @staticmethod
     def getItem(level):
         itemRoll = random.randint(level * 3, 100)
-        itemType = "none"
+        kind = "none"
         
-        if itemRoll < 70:
+        if itemRoll < 45:
             return None
+        if itemRoll < 70:
+            kind = "usable"
         elif itemRoll < 85:
-            itemType = "weapon"
+            kind = "weapon"
         elif itemRoll < 95:
-            itemType = "armor"
+            kind = "armor"
         else:
-            itemType = "ring"
+            kind = "ring"
     
-        items = [item for item in item_list.items if item["kind"] == itemType and item["level"] <= level and item["level"] > level - 5] 
+        if kind == "usable":
+            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level] 
+        else:
+            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 5] 
         info = random.choice(items)
         return info
 
@@ -66,11 +77,12 @@ class Item:
         page = options["currPage"]
         pageSize = options["pageSize"]
         filterValue = options["filter"]
+        mode = options["mode"]
 
         sourceType = type(source).__name__
         actions = []
         if sourceType == "Player":
-            actions = ["<E>quip", "<U>se"]
+            actions = ["<U>se"] if mode == "combat" else ["<E>quip", "<U>se"]
         elif sourceType == "Store":
             actions = ["<B>uy", "<S>ell"]
         
@@ -84,7 +96,8 @@ class Item:
             navigation += ["<N>ext Page"]
 
         leave = ["<L>eave"] if sourceType == "Store" else ["<C>lose"]
-        options = actions + navigation + ["<F>ilter"] + leave
+        filterOption = [] if mode == "combat" else ["<F>ilter"]
+        options = actions + navigation + filterOption + leave
         return ", ".join(options)
 
     @staticmethod

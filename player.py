@@ -60,6 +60,10 @@ class Player(Creature):
         self.items.append(item)
         self.applyItems()
         
+    def removeItem(self, item):
+        self.items.remove(item)
+        self.applyItems()
+        
     def equipItem(self, newItem):
         for invItem in self.items:
             if invItem.kind == newItem.kind and invItem.equipped:
