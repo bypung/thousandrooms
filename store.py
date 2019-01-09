@@ -14,7 +14,7 @@ class Store:
 
     def generateItems(self):
         while len(self.items) < self.maxItems:
-            newItem = Item(self.level)
+            newItem = Item(random.randint(max(self.level - 2, 1), self.level))
             if newItem.kind:
                 self.items += [newItem]
 

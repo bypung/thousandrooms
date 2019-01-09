@@ -97,8 +97,10 @@ class Item:
         filterHeader = "" if filterValue == "all" else f" ({filterValue.title()})"
         if sourceType == "Player":
             print(f"{Fore.CYAN}{Style.BRIGHT}{source.name}'s Inventory{filterHeader}")
+            valueFactor = 10
         elif sourceType == "Store":
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Store Inventory")
+            print(f"{Fore.MAGENTA}{Style.BRIGHT}Store Inventory{filterHeader}")
+            valueFactor = 40
 
         filteredItems = source.items if filterValue == "all" else list(filter(lambda i: i.kind == filterValue, source.items))
 
@@ -113,7 +115,7 @@ class Item:
                 "ATK": f"{item.atk if item.atk else '--'}",
                 "Type": f"{item.type}",
                 "AC": f"{item.ac if item.ac else '--'}",
-                "Value": f"{item.level * 10}"
+                "Value": f"{item.level * valueFactor}"
             }
             if sourceType == "Player":
                 line["_color"] = Fore.GREEN if item.equipped else Fore.WHITE

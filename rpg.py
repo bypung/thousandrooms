@@ -63,7 +63,7 @@ class Game:
     def initItemList(self):
         self.itemList = {
             "currPage": 0,
-            "pageSize": 10,
+            "pageSize": 15,
             "filter": "all",
             "storeMode": "buy"
         }
@@ -126,6 +126,7 @@ class Game:
 
     def storeDisplay(self):
         Item.printInventory(self.store, self.itemList)
+        print(f"\n{Fore.YELLOW}GP: {self.player.gp}")
 
     def mapDisplay(self):
         self.map.printFloor(self.turn)
@@ -326,6 +327,21 @@ class Game:
             self.quit = True
         return True
 
+    def filterItems(self):
+        print("Filter: <W>eapons, <A>rmor, <R>ings, <U>sable, <E>verything")
+        choice = input()
+        filterValue = "all"
+        if choice.lower() == "w":
+            filterValue = "weapon"
+        if choice.lower() == "a":
+            filterValue = "armor"
+        if choice.lower() == "r":
+            filterValue = "ring"
+        if choice.lower() == "u":
+            filterValue = "usable"
+        self.itemList["currPage"] = 0
+        self.itemList["filter"] = filterValue
+
     def inventoryResolve(self, action):
         if action == "E":
             print("Which item do you wish to equip?")
@@ -352,19 +368,7 @@ class Game:
         if action == "N":
             self.itemList["currPage"] += 1
         if action == "F":
-            print("Filter: <W>eapons, <A>rmor, <R>ings, <U>sable, <E>verything")
-            choice = input()
-            filterValue = "all"
-            if choice.lower() == "w":
-                filterValue = "weapon"
-            if choice.lower() == "a":
-                filterValue = "armor"
-            if choice.lower() == "r":
-                filterValue = "ring"
-            if choice.lower() == "u":
-                filterValue = "usable"
-            self.itemList["currPage"] = 0
-            self.itemList["filter"] = filterValue
+            self.filterItems()
         if action == "C":
             self.mode = "peace"
         return True
@@ -391,6 +395,12 @@ class Game:
                         print("Please enter an integer")
         if action == "S":
             print("sell")
+        if action == "P":
+            self.itemList["currPage"] -= 1
+        if action == "N":
+            self.itemList["currPage"] += 1
+        if action == "F":
+            self.filterItems()
         if action == "L":
             self.mode = "peace"
         return True
