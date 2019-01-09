@@ -82,9 +82,9 @@ class Map:
                             upStairs.stairDir = "up"
                             floor["stairs"][key] = upStairs
                 if f < numFloors:
-                    down = (random.randint(0,self.width), random.randint(0,self.width))
+                    down = (random.randint(0,self.width - 1), random.randint(0,self.width - 1))
                     while down == up:
-                        down = (random.randint(0,self.width), random.randint(0,self.width))
+                        down = (random.randint(0,self.width - 1), random.randint(0,self.width - 1))
                     downStairs = Door("stairs")
                     downStairs.stairDir = "down"
                     floor["stairs"][down] = downStairs
@@ -95,6 +95,9 @@ class Map:
             self.playerPosition = data["playerPosition"]
         else:
             self.setPlayerPosition(0, -1, -1)
+            escapeStairs = Door("stairs")
+            escapeStairs.stairDir = "up"
+            self.floors[0]["stairs"][(self.playerPosition[1], self.playerPosition[2])] = escapeStairs
 
     def getCurrentRoom(self):
         pp = self.playerPosition

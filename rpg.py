@@ -114,9 +114,7 @@ class Game:
         self.map.printFloor(self.turn)
 
     def gameOverDisplay(self):
-        self.player.printStats()
-        print("")
-        self.monster.printStats()
+        self.player.printHistory()
 
     def printOptions(self):
         options = self.options[self.mode]
@@ -181,7 +179,7 @@ class Game:
     def deathCheck(self):
         if self.player.hp <= 0:
             self.addResolution(f"{Fore.RED}{Style.BRIGHT}You die!")
-            self.player.setEpitaph(self.monster, self.level)
+            self.player.killedBy(self.monster, self.level)
             self.mode = "gameOver"
 
 ### RESOLUTION METHODS ###
@@ -193,18 +191,26 @@ class Game:
             direction = action.lower()
             for key, door in self.map.getCurrentDoors():
                 if key[0] == direction and door.exists:
-                    self.map.movePlayer(direction)
-                    door.useDoor()
-                    if 'traveling' in self.player.abilities:
-                        travelRoll = self.rollDie(10)
-                        if travelRoll > self.player.getAbilityLevel('traveling'):
-                            self.incrementTurn()
+                    if direction == "u" and self.map.playerPosition[0] == 0:
+                        print(f"{Fore.MAGENTA}{Style.BRIGHT}Are you sure you want to exit the dungeon? <Y>es or <N>o")
+                        choice = input()
+                        if choice.lower() == "y":
+                            self.mode = "gameOver"
+                            self.player.setEpitaph("Escaped the dungeon!")
+                            return True
                     else:
-                        self.incrementTurn()
-                    monster = self.map.getCurrentRoom().monster
-                    if monster != None:
-                        self.monster = monster
-                        self.mode = "combat"
+                        self.map.movePlayer(direction)
+                        door.useDoor()
+                        if 'traveling' in self.player.abilities:
+                            travelRoll = self.rollDie(10)
+                            if travelRoll > self.player.getAbilityLevel('traveling'):
+                                self.incrementTurn()
+                        else:
+                            self.incrementTurn()
+                        monster = self.map.getCurrentRoom().monster
+                        if monster != None:
+                            self.monster = monster
+                            self.mode = "combat"
         else:
             return False
         return True
@@ -412,4 +418,3 @@ game = Game()
 while not game.quit:
     game.nextTurn()
 clear()
-game.player.printHistory()

@@ -9,7 +9,7 @@ class Door:
                 setattr(self, k, data[k])
         else:
             self.type = doorType
-            self.exists = random.choice([True, True, False])
+            self.exists = True if doorType == "stairs" else random.choice([True, True, False])
             self.seen = False
             self.used = False
 

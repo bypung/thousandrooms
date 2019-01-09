@@ -109,8 +109,11 @@ class Player(Creature):
     def incrementHistory(self, field, value = 1):
         self.history[field] += value
 
-    def setEpitaph(self, monster, level):
-        self.history["epitaph"] = f"Killed by a {monster.name} on level {level}."
+    def killedBy(self, monster, level):
+        self.setEpitaph(f"Killed by a {monster.name} on level {level}.")
+
+    def setEpitaph(self, text):
+        self.history["epitaph"] = text
 
     def printStats(self):
         print(f"{Fore.BLUE}{Style.BRIGHT}{self.name}")
@@ -161,8 +164,8 @@ class Player(Creature):
         Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], items, [30, 8, 12, 8, 8])
 
     def printHistory(self):
-        print(f"{Fore.BLUE}{Style.BRIGHT}History")
-        print(f"{Fore.RED}{self.history['epitaph']}")
+        print(f"{Fore.MAGENTA}{Style.BRIGHT}{self.name}")
+        print(f"{Fore.RED}{self.history['epitaph']}\n")
 
         stats = [
             { 
