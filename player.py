@@ -140,7 +140,7 @@ class Player(Creature):
             itemNames = ["None"]
         for item in self.items:
             if item.equipped:
-                itemNames.append(item.name)
+                itemNames.append(item.displayName)
         print("Equipped: " + ", ".join(itemNames))
 
     def printInventory(self):
@@ -151,14 +151,14 @@ class Player(Creature):
         for i, item in enumerate(self.items, 1):
             items.append({
                 "_color": Fore.GREEN if item.equipped else Fore.WHITE,
-                "Name": f"{i}) {item.name}",
+                "Name": f"{i}) {item.displayName}",
                 "ATK": f"{item.atk if item.atk else '--'}",
                 "Type": f"{item.type}",
                 "AC": f"{item.ac if item.ac else '--'}",
                 "Value": f"{item.level * 10}"
             })
 
-        Utils.printTable(["   Name", "ATK", "AC", "Value"], items)
+        Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], items, [30, 8, 12, 8, 8])
 
     def printHistory(self):
         print(f"{Fore.BLUE}{Style.BRIGHT}History")

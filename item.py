@@ -14,8 +14,7 @@ class Item:
             for i in info:
                 setattr(self, i, info[i])
 
-            if self.ability:
-                self.name += f" of {self.ability}"
+            self.displayName = f"{self.name} of {self.ability}" if self.ability else self.name
 
             # improved items
             levelDiff = level - self.level
@@ -28,7 +27,9 @@ class Item:
                     descriptor = item_list.descriptors[self.kind][self.type][levelDiff]
                 except KeyError:
                     pass
-                self.name = f"{descriptor} {self.name}"
+                except TypeError:
+                    pass
+                self.displayName = f"{descriptor} {self.displayName}"
                 self.level += levelDiff
                 if self.atk:
                     self.atk += levelDiff

@@ -25,6 +25,8 @@ class Monster(Creature):
                     pass
                 self.name = f"{descriptor} {self.name}"
                 self.level += levelDiff
+                self.atk += levelDiff
+                Creature.calculateDam(self)
 
             self.hp = 0
             for x in range(level):

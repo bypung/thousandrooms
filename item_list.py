@@ -154,30 +154,30 @@ items = [
   },
   {
     "kind": "ring",
-    "name": "Traveling",
+    "name": "Ring",
     "level": 2,
     "ac": "",
     "atk": "",
     "type": "",
-    "ability": "traveling"
+    "ability": "Traveling"
   },
   {
     "kind": "ring",
-    "name": "Running",
+    "name": "Ring",
     "level": 3,
     "ac": "",
     "atk": "",
     "type": "",
-    "ability": "running"
+    "ability": "Running"
   },
   {
     "kind": "ring",
-    "name": "Regeneration",
+    "name": "Ring",
     "level": 4,
     "ac": "",
     "atk": "",
     "type": "",
-    "ability": "regeneration"
+    "ability": "Regeneration"
   }
 ]
 

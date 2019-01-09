@@ -10,18 +10,20 @@ class Utils:
     @staticmethod
     def printTable(header, data, cellWidth = 20):
         headerRow = ""
-        for column in header:
-            headerRow += (column).ljust(cellWidth)
+        if type(cellWidth) is int:
+            cellWidth = [cellWidth] * len(header)
+
+        for i, column in enumerate(header):
+            headerRow += column.ljust(cellWidth[i])
         print(headerRow)
 
         for row in data:
             out = ""
             if row["_color"]:
                 out += row["_color"]
-
-            for field in row:
-                if not field == "_color":
-                    out += (row[field]).ljust(cellWidth)
+            dataFields = [key for key in list(row.keys()) if key != "_color"]
+            for i, field in enumerate(dataFields):
+                out += (row[field]).ljust(cellWidth[i])
             print(out)
 
     @staticmethod

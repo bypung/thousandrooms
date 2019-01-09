@@ -1,5 +1,6 @@
 monsters = [
   {
+    "id": 1,
     "name": "Goblin",
     "level": 1,
     "hd": 4,
@@ -13,6 +14,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 2,
     "name": "Kobold",
     "level": 1,
     "hd": 3,
@@ -26,6 +28,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 3,
     "name": "Dog",
     "level": 1,
     "hd": 2,
@@ -39,6 +42,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 4,
     "name": "Jelly",
     "level": 1,
     "hd": 5,
@@ -52,6 +56,7 @@ monsters = [
     "special": "melt"
   },
   {
+    "id": 5,
     "name": "Skeleton",
     "level": 2,
     "hd": 3,
@@ -65,6 +70,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 6,
     "name": "Orc",
     "level": 2,
     "hd": 4,
@@ -78,6 +84,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 7,
     "name": "Slime",
     "level": 2,
     "hd": 7,
@@ -91,6 +98,7 @@ monsters = [
     "special": "melt"
   },
   {
+    "id": 8,
     "name": "Wolf",
     "level": 2,
     "hd": 3,
@@ -104,6 +112,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 9,
     "name": "Imp",
     "level": 2,
     "hd": 2,
@@ -117,6 +126,7 @@ monsters = [
     "special": "burn"
   },
   {
+    "id": 10,
     "name": "Gnoll",
     "level": 3,
     "hd": 4,
@@ -130,6 +140,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 11,
     "name": "Zombie",
     "level": 3,
     "hd": 6,
@@ -143,6 +154,7 @@ monsters = [
     "special": ""
   },
   {
+    "id": 12,
     "name": "Python",
     "level": 3,
     "hd": 4,
@@ -154,6 +166,76 @@ monsters = [
     "resist": "",
     "vulnerability": "",
     "special": ""
+  },
+  {
+    "id": 13,
+    "name": "Spectre",
+    "level": 4,
+    "hd": 5,
+    "atk": 5,
+    "ac": 3,
+    "type": "humanoid",
+    "subtype": "undead",
+    "atk_type": "slash",
+    "resist": "",
+    "vulnerability": "",
+    "special": "drain"
+  },
+  {
+    "id": 14,
+    "name": "Griffon",
+    "level": 4,
+    "hd": 4,
+    "atk": 6,
+    "ac": 3,
+    "type": "animal",
+    "subtype": "",
+    "atk_type": "slash",
+    "resist": "",
+    "vulnerability": "",
+    "special": ""
+  },
+  {
+    "id": 15,
+    "name": "Ogre",
+    "level": 4,
+    "hd": 6,
+    "atk": 6,
+    "ac": 4,
+    "type": "humanoid",
+    "subtype": "",
+    "atk_type": "blunt",
+    "resist": "",
+    "vulnerability": "",
+    "special": ""
+  },
+  {
+    "id": 16,
+    "name": "Quasit",
+    "level": 4,
+    "hd": 3,
+    "atk": 4,
+    "ac": 6,
+    "type": "demon",
+    "subtype": "",
+    "atk_type": "pierce",
+    "resist": "",
+    "vulnerability": "",
+    "special": ""
+  },
+  {
+    "id": 17,
+    "name": "Ooze",
+    "level": 4,
+    "hd": 7,
+    "atk": 2,
+    "ac": 4,
+    "type": "aberration",
+    "subtype": "",
+    "atk_type": "acid",
+    "resist": "electric",
+    "vulnerability": "fire",
+    "special": "melt"
   }
 ]
 
@@ -249,6 +331,21 @@ atkVerbs = {
             "scorches",
             "burns",
             "chars"
+        ],
+        "slash": [
+            "slashes",
+            "cuts",
+            "hacks"
+        ],
+        "pierce": [
+            "stabs",
+            "pokes",
+            "impales"
+        ],
+        "blunt": [
+            "bashes",
+            "smashes",
+            "crushes"
         ]
     }
 }

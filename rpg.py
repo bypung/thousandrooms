@@ -61,7 +61,7 @@ class Game:
     
     def incrementDungeonLevel(self):
         self.level += 1
-        self.nextLevel += 100
+        self.nextLevel += (100 * self.level)
         self.map.dungeonLevel = self.level
 
     def incrementTurn(self, numTurns = 1):
@@ -104,13 +104,14 @@ class Game:
         print(f"{Style.BRIGHT}Dungeon Level {self.level} - Turn {self.turn}\n")
         self.player.printStats()
         print("")
-        self.map.getCurrentRoom().printStats()
+        room = self.map.getCurrentRoom()
+        room.printStats(self.map.getCurrentDoors())
 
     def inventoryDisplay(self):
         self.player.printInventory()
 
     def mapDisplay(self):
-        self.map.printFloor()
+        self.map.printFloor(self.turn)
 
     def gameOverDisplay(self):
         self.player.printStats()
@@ -164,7 +165,7 @@ class Game:
         gp = self.monster.level * self.rollDie(10)
         self.player.xp += xp
         self.player.gp += gp
-        self.addResolution(f"{Fore.YELLOW}You got {xp} XP and {gp} GP")
+        self.addResolution(f"\n{Fore.YELLOW}You got {xp} XP and {gp} GP")
         
         levelUp = self.player.checkLevelUp()
         if levelUp:
@@ -175,7 +176,7 @@ class Game:
         item = Item(self.monster.level)
         if item.kind:
             self.player.addItem(item)
-            self.addResolution(f"{Fore.YELLOW}You found: {item.name}")
+            self.addResolution(f"{Fore.YELLOW}You found: {item.displayName}")
 
     def deathCheck(self):
         if self.player.hp <= 0:
@@ -188,10 +189,10 @@ class Game:
     def mapResolve(self, action):
         if action == "B":
             self.mode = "peace"
-        elif action in ["N", "S", "E", "W"]:
+        elif action in ["N", "S", "E", "W", "U", "D"]:
             direction = action.lower()
             for key, door in self.map.getCurrentDoors():
-                if key == direction and door.exists:
+                if key[0] == direction and door.exists:
                     self.map.movePlayer(direction)
                     door.useDoor()
                     if 'traveling' in self.player.abilities:
@@ -269,7 +270,7 @@ class Game:
             self.mode = "map"
         elif action == "R":
             self.addResolution("You take some time to recover...")
-            restFactor = 2
+            restFactor = math.sqrt(self.player.level)
             if 'regeneration' in self.player.abilities:
                 restFactor -= 0.2 * self.player.getAbilityLevel('regeneration')
                 self.addResolution(f"{Fore.GREEN}You heal quickly...")
@@ -362,6 +363,8 @@ class Game:
             "ns": {},
             "ew": {}
         }
+        saveObj["map"]["stairs"] = {}
+
         for f, floor in enumerate(saveObj["map"]["floors"]):
             for r in range(self.map.width):
                 for c in range(self.map.width):
@@ -379,6 +382,11 @@ class Game:
                     try:
                         ew = floor["doors"]["ew"][(r,c)].__dict__
                         saveObj["map"]["doors"]["ew"][saveKey] = ew
+                    except KeyError:
+                        pass
+                    try:
+                        stairs = floor["stairs"][(r,c)].__dict__
+                        saveObj["map"]["stairs"][saveKey] = stairs
                     except KeyError:
                         pass
 

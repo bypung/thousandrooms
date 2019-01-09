@@ -1,4 +1,5 @@
 import random
+import copy
 import sys
 from colorama import Fore, Back, Style
 
@@ -18,25 +19,31 @@ class Map:
                 "doors": {
                     "ew": {},
                     "ns": {}
-                }
+                },
+                "stairs": {}
             }
 
             if data:
                 for r in range(width):
                     for c in range(width):
                         # generate rooms
-                        floor["rooms"][(r,c)] = Room(data["rooms"][f"{f}-{r}-{c}"], data["monsters"][f"{f}-{r}-{c}"])
-                        # generate east-west doors
+                        floor["rooms"][(r,c)] = Room((f, r, c), data["rooms"][f"{f}-{r}-{c}"], data["monsters"][f"{f}-{r}-{c}"])
+                        # load east-west doors
                         if c < width - 1:
                             floor["doors"]["ew"][(r,c)] = Door("ew", data["doors"]["ew"][f"{f}-{r}-{c}"])
-                        # generate north-south doors
+                        # load north-south doors
                         if r < width - 1:
                             floor["doors"]["ns"][(r,c)] = Door("ns", data["doors"]["ns"][f"{f}-{r}-{c}"])
+                        # load stairs
+                        try: 
+                            floor["stairs"][(r,c)] = Door("stairs", data["stairs"][f"{f}-{r}-{c}"])
+                        except KeyError:
+                            pass
             else:
                 for r in range(width):
                     for c in range(width):
                         # generate rooms
-                        floor["rooms"][(r,c)] = (Room())
+                        floor["rooms"][(r,c)] = Room((f, r, c))
                         # generate east-west doors
                         if c < width - 1:
                             floor["doors"]["ew"][(r,c)] = Door("ew")
@@ -65,6 +72,23 @@ class Map:
                         if not connected:
                             random.choice(doorList).exists = True
             
+                # generate stairs
+                up = (-1, -1)
+                if f > 0:
+                    for i, (key, stair) in enumerate(self.floors[f - 1]["stairs"].items()):
+                        if stair.stairDir == "down":
+                            up = key
+                            upStairs = copy.deepcopy(stair)
+                            upStairs.stairDir = "up"
+                            floor["stairs"][key] = upStairs
+                if f < numFloors:
+                    down = (random.randint(0,self.width), random.randint(0,self.width))
+                    while down == up:
+                        down = (random.randint(0,self.width), random.randint(0,self.width))
+                    downStairs = Door("stairs")
+                    downStairs.stairDir = "down"
+                    floor["stairs"][down] = downStairs
+
             self.floors.append(floor)
 
         if data:
@@ -123,41 +147,74 @@ class Map:
                 if key == "w":
                     self.getRoom(floor, row, col - 1).generateContents(self.dungeonLevel)
 
-    def printFloor(self):
+    def printFloor(self, turn):
         floor = self.playerPosition[0]
+        mapBuffer = []
+        legendBuffer = [
+            f"{Fore.CYAN}{Style.BRIGHT}Legend:", 
+            f"{Fore.GREEN}[ ]{Fore.WHITE} / {Fore.RED}[ ]{Fore.WHITE} : Stairs Up/Down"
+        ]
 
         ppSlug = f"[{self.playerPosition[1]},{self.playerPosition[2]}]"
-        print(f"{Fore.MAGENTA}{Style.BRIGHT}Dungeon Level {floor + 1}")
+        print(f"{Fore.MAGENTA}{Style.BRIGHT}Dungeon Level {floor + 1} - Turn {turn}")
 
+        # print top map header
         header = f"{Style.DIM}  "
         for c in range(self.width):
             header +=(f" {c} ")
             if (c < self.width - 1):
                 header += "  "
-        print(header)
+        mapBuffer.append(header)
 
+        # print map rows
         for r in range(self.width):
-            sys.stdout.write(f"{Style.DIM}{r} {Style.NORMAL}")
+            roomRow = ""
+            roomRow += f"{Style.DIM}{r} {Style.NORMAL}"
             for c in range(self.width):
                 room = self.floors[floor]["rooms"][(r,c)]
                 isCurrentRoom = self.playerPosition[1] == r and self.playerPosition[2] == c
-                sys.stdout.write(room.printMap(isCurrentRoom))
+                stairType = ""
+                try:
+                    stairs = self.floors[floor]["stairs"][(r,c)]
+                    stairType = stairs.stairDir
+                except KeyError:
+                    pass
+                roomRow += room.printMap(isCurrentRoom, stairType)
                 if c < self.width - 1:
                     door = self.floors[floor]["doors"]["ew"][(r,c)]
-                    sys.stdout.write(door.printMap())
+                    roomRow += door.printMap()
+            mapBuffer.append(roomRow)
+
             if r < self.width - 1:
-                sys.stdout.write("\n  ")
+                doorRow = "  "
                 for c in range(self.width):
                     door = self.floors[floor]["doors"]["ns"][(r,c)]
-                    sys.stdout.write(door.printMap())
+                    doorRow += door.printMap()
                     if c < self.width - 1:
-                        sys.stdout.write("  ")
-            sys.stdout.write("\n")
+                        doorRow += "  "
+                mapBuffer.append(doorRow)
+        
+        mapLineWidth = len(mapBuffer[0])
+        for b in range(max(len(mapBuffer), len(legendBuffer))):
+            mapLine = " " * mapLineWidth
+            legendLine = ""
+            try:
+                mapLine = mapBuffer[b]
+            except IndexError:
+                pass
+            try:
+                legendLine = legendBuffer[b]
+            except IndexError:
+                pass
+            print(f"{mapLine} {Style.DIM}| {Style.NORMAL}{legendLine}")
 
     def getCurrentDoors(self):
         floor = self.floors[self.playerPosition[0]]
         r = self.playerPosition[1]
         c = self.playerPosition[2]
+        return self.getRoomDoors(floor, r, c)
+
+    def getRoomDoors(self, floor, r, c):
         out = []
         if r > 0:
             out.append(("n", floor["doors"]["ns"][(r-1,c)]))
@@ -167,20 +224,31 @@ class Map:
             out.append(("w", floor["doors"]["ew"][(r,c-1)]))
         if c < self.width - 1:
             out.append(("e", floor["doors"]["ew"][(r,c)]))
+        for key, stair in floor["stairs"].items():
+            if key == (r, c):
+                out.append((stair.stairDir, stair))  
         return out
 
     def getOptions(self):
         out = f"{Style.BRIGHT}"
+        options = []
+        doors = []
+        stairs = []
         for direction, door in self.getCurrentDoors():
             if (door.exists):
                 if direction == "n":
-                    out += "<N>orth, "
+                    doors += ["<N>orth"]
                 if direction == "s":
-                    out += "<S>outh, "
+                    doors += ["<S>outh"]
                 if direction == "e":
-                    out += "<E>ast, "
+                    doors += ["<E>ast"]
                 if direction == "w":
-                    out += "<W>est, "
-        out += "<L>isten, <S>earch, <B>ack"
+                    doors += ["<W>est"]
+                if direction == "up":
+                    stairs += ["<U>p"]
+                if direction == "down":
+                    stairs += ["<D>own"]
+        options += doors + stairs + ["<L>isten", "<S>earch", "<B>ack"]
+        out += ", ".join(options)
         return out
 
