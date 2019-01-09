@@ -27,12 +27,14 @@ class Game:
         self.nextLevel = 100
         self.level = 1
         self.map = None
+        self.store = None
         self.options = {
             "start": "<L>oad, <N>ew",
             "combat": "<A>ttack, <D>efend, <R>un",
-            "peace": "<R>est, <C>ontinue, <I>nventory, <S>ave",
+            "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
-            "inventory": "<E>quip, <C>lose",
+            "inventory": lambda : Item.getOptions(self.player, self.itemList["currPage"], self.itemList["pageSize"]) if self.player else "",
+            "store": lambda : Item.getOptions(self.store, self.itemList["currPage"], self.itemList["pageSize"]) if self.store else "",
             "map": lambda : self.map.getOptions() if self.map else ""
         }
         self.resolver = {
@@ -51,8 +53,16 @@ class Game:
             "inventory": self.inventoryDisplay,
             "map": self.mapDisplay
         }
+        self.initItemList()
         self.clearResolution()
         self.nextTurn()
+
+    def initItemList(self):
+        self.itemList = {
+            "currPage": 0,
+            "pageSize": 10,
+            "storeMode": "buy"
+        }
 
 ### NUMBER METHODS ###
 
@@ -285,7 +295,12 @@ class Game:
             self.player.incrementHistory("rest")
             self.incrementTurn(timeToRest)
         elif action == "I":
+            self.initItemList()
             self.mode = "inventory"
+        elif action == "M":
+            self.initItemList()
+            self.store = Store(self.level)
+            self.mode = "store"
         elif action == "S":
             self.createSave()
             print("<C>ontinue or <Q>uit?")
