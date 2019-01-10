@@ -47,6 +47,12 @@ class Player(Creature):
         for data in itemData:
             self.items.append(Item(0, data))
 
+    def addGold(self, value):
+        self.gp += value
+        
+    def removeGold(self, value):
+        self.xp += value
+
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
         kind = item.kind

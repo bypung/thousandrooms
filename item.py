@@ -82,7 +82,12 @@ class Item:
         sourceType = type(source).__name__
         actions = []
         if sourceType == "Player":
-            actions = ["<U>se"] if mode == "combat" else ["<E>quip", "<U>se"]
+            if mode == "combat":
+                actions = ["<U>se"]  
+            elif mode == "sell":
+                actions = ["<B>uy", "<S>ell"]  
+            else:
+                actions = ["<E>quip", "<U>se"]
         elif sourceType == "Store":
             actions = ["<B>uy", "<S>ell"]
         
@@ -97,8 +102,10 @@ class Item:
 
         leave = ["<L>eave"] if sourceType == "Store" else ["<C>lose"]
         filterOption = [] if mode == "combat" else ["<F>ilter"]
-        options = actions + navigation + filterOption + leave
-        return ", ".join(options)
+        out = actions + navigation + filterOption + leave
+        out = options["message"] + f"{Style.RESET_ALL}\n" + ", ".join(out)
+        options["message"] = ""
+        return out
 
     @staticmethod
     def printInventory(source, options):
@@ -110,10 +117,10 @@ class Item:
         filterHeader = "" if filterValue == "all" else f" ({filterValue.title()})"
         if sourceType == "Player":
             print(f"{Fore.CYAN}{Style.BRIGHT}{source.name}'s Inventory{filterHeader}")
-            valueFactor = 10
+            valueFactor = options["sellFactor"]
         elif sourceType == "Store":
             print(f"{Fore.MAGENTA}{Style.BRIGHT}Store Inventory{filterHeader}")
-            valueFactor = 40
+            valueFactor = options["buyFactor"]
 
         filteredItems = source.items if filterValue == "all" else list(filter(lambda i: i.kind == filterValue, source.items))
 

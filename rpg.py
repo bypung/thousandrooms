@@ -3,6 +3,7 @@ import math
 import os
 import json
 import copy
+import sys
 from types import *
 
 from colorama import init as coloramaInit
@@ -73,7 +74,10 @@ class Game:
             "currPage": 0,
             "pageSize": 15,
             "filter": "all",
-            "mode": "peace"
+            "mode": "peace",
+            "sellFactor": 10,
+            "buyFactor": 40,
+            "message": ""
         }
 
 ### NUMBER METHODS ###
@@ -133,7 +137,8 @@ class Game:
         Item.printInventory(self.player, self.itemList)
 
     def storeDisplay(self):
-        Item.printInventory(self.store, self.itemList)
+        invSource = self.store if self.itemList["mode"] == "buy" else self.player
+        Item.printInventory(invSource, self.itemList)
         print(f"\n{Fore.YELLOW}GP: {self.player.gp}")
 
     def mapDisplay(self):
@@ -225,6 +230,41 @@ class Game:
             self.mode = "gameOver"
 
 ### ITEM METHODS ###
+
+    def filterItems(self):
+        print("Filter: <W>eapons, <A>rmor, <R>ings, <U>sable, <E>verything")
+        choice = input()
+        filterValue = "all"
+        if choice.lower() == "w":
+            filterValue = "weapon"
+        if choice.lower() == "a":
+            filterValue = "armor"
+        if choice.lower() == "r":
+            filterValue = "ring"
+        if choice.lower() == "u":
+            filterValue = "usable"
+        self.itemList["currPage"] = 0
+        self.itemList["filter"] = filterValue
+
+    def selectItem(self, prompt):
+        sys.stdout.write(f"{prompt} {Style.DIM}<Enter> to cancel {Style.NORMAL}")
+        complete = False
+        while not complete:
+            itemNum = input()
+            if itemNum == "":
+                return None
+            else:
+                try:
+                    i = int(itemNum) - 1
+                    try:
+                        item = Item.getFilteredItem(self.player, self.itemList, i)
+                        complete = True
+                        return item
+                    except IndexError:
+                        print("Invalid item number")
+                except ValueError:
+                    #Handle the exception
+                    print("Please enter an integer")
 
     def resolveItem(self, item, mode):
         if mode == "combat" and item.type == "peace":
@@ -402,6 +442,9 @@ class Game:
             self.itemList["mode"] = "buy"
             self.store = Store(self.level)
             self.mode = "store"
+            timeToShop = (self.map.playerPosition[0] + 1) * 10
+            self.itemList["message"] = f"{Style.DIM}This trip will take {timeToShop} turns..."
+            self.incrementTurn(timeToShop)
         elif action == "S":
             self.createSave()
             print("<C>ontinue or <Q>uit?")
@@ -420,42 +463,11 @@ class Game:
             self.quit = True
         return True
 
-    def filterItems(self):
-        print("Filter: <W>eapons, <A>rmor, <R>ings, <U>sable, <E>verything")
-        choice = input()
-        filterValue = "all"
-        if choice.lower() == "w":
-            filterValue = "weapon"
-        if choice.lower() == "a":
-            filterValue = "armor"
-        if choice.lower() == "r":
-            filterValue = "ring"
-        if choice.lower() == "u":
-            filterValue = "usable"
-        self.itemList["currPage"] = 0
-        self.itemList["filter"] = filterValue
-
     def inventoryResolve(self, action):
         if action == "E":
-            print("Which item do you wish to equip?")
-            complete = False
-            while not complete:
-                itemNum = input()
-                if itemNum == "":
-                    complete = True
-                else:
-                    try:
-                        i = int(itemNum) - 1
-                        try:
-                            item = Item.getFilteredItem(self.player, self.itemList, i)
-                            if item:
-                                self.player.equipItem(item)
-                                complete = True
-                        except IndexError:
-                            print("Invalid item number")
-                    except ValueError:
-                        #Handle the exception
-                        print("Please enter an integer")
+            item = self.selectItem("Which item do you wish to equip?")
+            if item:
+                self.player.equipItem(item)
         if action == "P":
             self.itemList["currPage"] -= 1
         if action == "N":
@@ -463,52 +475,41 @@ class Game:
         if action == "F":
             self.filterItems()
         if action == "U":
-            print("Use which item?")
-            complete = False
-            while not complete:
-                itemNum = input()
-                if itemNum == "":
-                    complete = True
-                else:
-                    try:
-                        i = int(itemNum) - 1
-                        try:
-                            item = Item.getFilteredItem(self.player, self.itemList, i)
-                            used = self.resolveItem(item, self.itemList["mode"])
-                            if used:
-                                self.player.removeItem(item)
-                            complete = True
-                        except IndexError:
-                            print("Invalid item number")
-                    except ValueError:
-                        #Handle the exception
-                        print("Please enter an integer")
+            item = self.selectItem("Use which item?")
+            if item:
+                used = self.resolveItem(item, self.itemList["mode"])
+                if used:
+                    self.player.removeItem(item)
         if action == "C":
             self.mode = "peace"
         return True
 
     def storeResolve(self, action):
         if action == "B":
-            print("Which item do you wish to buy?")
-            complete = False
-            while not complete:
-                itemNum = input()
-                if itemNum == "":
-                    complete = True
-                else:
-                    try:
-                        i = int(itemNum) - 1
-                        try:
-                            item = Item.getFilteredItem(self.store, self.itemList, i)
-                            self.player.addItem(item)
-                            complete = True
-                        except IndexError:
-                            print("Invalid item number")
-                    except ValueError:
-                        #Handle the exception
-                        print("Please enter an integer")
+            if self.itemList["mode"] == "sell":
+                self.itemList["mode"] = "buy"
+            else:
+                item = self.selectItem("Which item do you wish to buy?")
+                if item:
+                    price = item.level * self.itemList["buyFactor"]
+                    if price <= self.player.gp:
+                        self.itemList["message"] = f"{Fore.CYAN}You bought the {item.displayName}!"
+                        self.itemList["currPage"] = 0
+                        self.player.removeGold(price)
+                        self.player.addItem(item)
+                    else:
+                        self.itemList["message"] = f"{Fore.RED}You can't afford the {item.displayName}!"
         if action == "S":
-            print("sell")
+            if self.itemList["mode"] == "buy":
+                self.itemList["mode"] = "sell"
+            else:
+                item = self.selectItem("Which item do you wish to sell?")
+                if item:
+                    price = item.level * self.itemList["sellFactor"]
+                    self.itemList["message"] = f"{Fore.YELLOW}You sold your {item.displayName}!"
+                    self.itemList["currPage"] = 0
+                    self.player.addGold(price)
+                    self.player.removeItem(item)
         if action == "P":
             self.itemList["currPage"] -= 1
         if action == "N":
