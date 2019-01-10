@@ -34,4 +34,4 @@ class Creature:
         if value == 0:
             self.hp = self.maxHp
         else :
-            self.hp -= value
+            self.hp += value

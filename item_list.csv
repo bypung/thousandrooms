@@ -19,10 +19,11 @@ ring,Ring of Shielding,1,1,,,,
 ring,Ring,2,,,,traveling,
 ring,Ring,3,,,,running,
 ring,Ring,4,,,,regeneration,
-usable,Potion,1,,,,,healing
-usable,Scroll,1,,,,,digging
-usable,Scroll,1,,,,,blinking
-usable,Scroll,2,,,,,teleport
-usable,Potion,2,,,,,invisibility
-usable,Scroll,2,,,,,shopping
-usable,Scroll,4,,,,,time warp
+usable,Potion,1,,,anytime,,healing
+usable,Scroll,1,,,peace,,digging
+usable,Scroll,1,,,anytime,,blinking
+usable,Scroll,2,,,peace,,teleport
+usable,Potion,2,,,combat,,invisibility
+usable,Scroll,2,,,peace,,shopping
+usable,Scroll,4,,,peace,,time warp
+usable,Scroll,3,,,combat,,fireball

@@ -27,6 +27,7 @@ class Game:
         self.turn = 1
         self.nextLevel = 100
         self.level = 1
+        self.monster = None
         self.map = None
         self.store = None
         self.options = {
@@ -57,7 +58,11 @@ class Game:
             "map": self.mapDisplay
         }
         self.effectResolvers = {
-            "healing": self.healingResolve
+            "healing": self.healingResolve,
+            "time warp": self.timeWarpResolve,
+            "shopping": self.shoppingResolve,
+            "blinking": self.blinkingResolve,
+            "fireball": self.fireballResolve
         }
         self.initItemList()
         self.clearResolution()
@@ -198,8 +203,10 @@ class Game:
             self.addResolution(f"{Fore.YELLOW}You found: {item.displayName}")
 
     def monsterDeathCheck(self):
+        if not self.monster:
+            return
         if self.monster.hp <= 0:
-            self.addResolution(f"The {self.monster.name} dies!")
+            self.addResolution(f"{Fore.GREEN}The {self.monster.name} dies!")
             self.map.getCurrentRoom().removeMonster()
             self.player.incrementHistory("kills")
             if self.player.hp <= self.player.maxHp * .25:
@@ -219,7 +226,12 @@ class Game:
 
 ### ITEM METHODS ###
 
-    def resolveCombatItem(self, item):
+    def resolveItem(self, item, mode):
+        if mode == "combat" and item.type == "peace":
+            return False
+        if mode == "manage" and item.type == "combat":
+            return False
+
         effect = item.effect
         escaped = False
 
@@ -231,15 +243,61 @@ class Game:
         if not escaped:
             self.monsterDeathCheck()
 
-        self.mode = "combat"
+        self.mode = "combat" if self.monster else "peace"
         self.incrementTurn()
-
-    def resolvePeaceItem(self, item):
-        print("peace item")
+        return True
 
     def healingResolve(self):
         self.player.heal(self.player.maxHp // 2)
         self.addResolution(f"{Fore.GREEN}You feel much better!")
+        return False
+
+    def timeWarpResolve(self):
+        self.level -= 1
+        self.nextLevel += self.level * 100
+        self.addResolution(f"{Fore.GREEN}The dungeon feels less dangerous...")
+        return False
+
+    def shoppingResolve(self):
+        self.initItemList()
+        self.itemList["mode"] = "buy"
+        self.mode = "store"
+        bonus = self.player.level * 10
+        self.player.gp += bonus
+        self.addResolution(f"{Fore.YELLOW}You are transported to the store with an extra {bonus} GP!")
+        return False
+
+    def blinkingResolve(self):
+        pp = self.map.playerPosition
+        minR = max(0, pp[1] - 2)
+        maxR = min(self.map.width - 1, pp[1] + 2)
+        minC = max(0, pp[2] - 2)
+        maxC = min(self.map.width - 1, pp[2] + 2)
+        newPos = (random.randint(minR, maxR), random.randint(minC, maxC))
+        while newPos == (pp[1], pp[2]):
+            newPos = (random.randint(minR, maxR), random.randint(minC, maxC))
+        self.map.setPlayerPosition(pp[0], newPos[0]. newPos[1])
+        self.addResolution(f"{Fore.MAGENTA}You are transported to another room!")
+        newRoom = self.map.getCurrentRoom()
+        newRoom.generateContents()
+        self.monster = newRoom.monster
+        if self.monster:
+            self.mode = "combat"
+            return False
+        else:
+            self.mode = "peace"
+            return True
+
+    def fireballResolve(self):
+        dam = 0
+        for i in range(self.player.level):
+            dam += self.rollDie(8)
+        if self.monster.resist == "fire":
+            dam = dam // 2
+        if self.monster.vulnerability == "fire":
+            dam = dam * 2
+        self.monster.damage(dam)
+        self.addResolution(f"{Fore.GREEN}The {self.monster.displayName} is blasted for {dam}!")
         return False
 
 ### RESOLUTION METHODS ###
@@ -416,11 +474,7 @@ class Game:
                         i = int(itemNum) - 1
                         try:
                             item = Item.getFilteredItem(self.player, self.itemList, i)
-                            used = False
-                            if self.itemList["mode"] == "combat":
-                                used = self.resolveCombatItem(item)
-                            elif self.itemList["mode"] == "manage":
-                                used = self.resolvePeaceItem(item)
+                            used = self.resolveItem(item, self.itemList["mode"])
                             if used:
                                 self.player.removeItem(item)
                             complete = True

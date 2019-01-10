@@ -50,12 +50,13 @@ class Player(Creature):
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
         kind = item.kind
-        found = False
-        for invItem in self.items:
-            if invItem.kind == kind:
-                found = True
-        if not found:
-            item.equipped = True
+        if kind != "usable":
+            found = False
+            for invItem in self.items:
+                if invItem.kind == kind:
+                    found = True
+            if not found:
+                item.equipped = True
 
         self.items.append(item)
         self.applyItems()
