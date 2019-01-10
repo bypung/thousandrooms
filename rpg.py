@@ -36,8 +36,8 @@ class Game:
             "combat": "<A>ttack, <D>efend, <U>se Item, <R>un",
             "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave",
             "gameOver": "<R>estart, <Q>uit",
-            "inventory": lambda : Item.getOptions(self.player, self.itemList) if self.player else "",
-            "store": lambda : Item.getOptions(self.store, self.itemList) if self.store else "",
+            "inventory": lambda : Item.getOptions(self.player, self.itemListOptions) if self.player else "",
+            "store": lambda : Item.getOptions(self.store, self.itemListOptions) if self.store else "",
             "map": lambda : self.map.getOptions() if self.map else ""
         }
         self.resolver = {
@@ -65,19 +65,20 @@ class Game:
             "blinking": self.blinkingResolve,
             "fireball": self.fireballResolve
         }
-        self.initItemList()
+        self.inititemListOptions()
         self.clearResolution()
         self.nextTurn()
 
-    def initItemList(self):
-        self.itemList = {
+    def inititemListOptions(self):
+        self.itemListOptions = {
             "currPage": 0,
             "pageSize": 15,
             "filter": "all",
             "mode": "peace",
             "sellFactor": 10,
             "buyFactor": 40,
-            "message": ""
+            "message": "",
+            "gp": 0
         }
 
 ### NUMBER METHODS ###
@@ -134,12 +135,12 @@ class Game:
         room.printStats(self.map.getCurrentDoors())
 
     def inventoryDisplay(self):
-        Item.printInventory(self.player, self.itemList)
+        Item.printInventory(self.player, self.itemListOptions)
 
     def storeDisplay(self):
-        invSource = self.store if self.itemList["mode"] == "buy" else self.player
-        Item.printInventory(invSource, self.itemList)
-        print(f"\n{Fore.YELLOW}GP: {self.player.gp}")
+        invSource = self.store if self.itemListOptions["mode"] == "buy" else self.player
+        self.itemListOptions["gp"] = self.player.gp
+        Item.printInventory(invSource, self.itemListOptions)
 
     def mapDisplay(self):
         self.map.printFloor(self.turn)
@@ -243,10 +244,10 @@ class Game:
             filterValue = "ring"
         if choice.lower() == "u":
             filterValue = "usable"
-        self.itemList["currPage"] = 0
-        self.itemList["filter"] = filterValue
+        self.itemListOptions["currPage"] = 0
+        self.itemListOptions["filter"] = filterValue
 
-    def selectItem(self, prompt):
+    def selectItem(self, source, prompt):
         sys.stdout.write(f"{prompt} {Style.DIM}<Enter> to cancel {Style.NORMAL}")
         complete = False
         while not complete:
@@ -257,7 +258,7 @@ class Game:
                 try:
                     i = int(itemNum) - 1
                     try:
-                        item = Item.getFilteredItem(self.player, self.itemList, i)
+                        item = Item.getFilteredItem(source, self.itemListOptions, i)
                         complete = True
                         return item
                     except IndexError:
@@ -299,8 +300,8 @@ class Game:
         return False
 
     def shoppingResolve(self):
-        self.initItemList()
-        self.itemList["mode"] = "buy"
+        self.inititemListOptions()
+        self.itemListOptions["mode"] = "buy"
         self.mode = "store"
         bonus = self.player.level * 10
         self.player.gp += bonus
@@ -398,9 +399,9 @@ class Game:
             self.incrementTurn()
         elif action == "U":
             self.mode = "inventory"
-            self.initItemList()
-            self.itemList["filter"] = "usable"
-            self.itemList["mode"] = "combat"
+            self.inititemListOptions()
+            self.itemListOptions["filter"] = "usable"
+            self.itemListOptions["mode"] = "combat"
         elif action == "R":
             self.player.incrementHistory("run_away")
             exits = self.map.getCurrentDoors()
@@ -435,15 +436,15 @@ class Game:
             self.player.incrementHistory("rest")
             self.incrementTurn(timeToRest)
         elif action == "I":
-            self.initItemList()
+            self.inititemListOptions()
             self.mode = "inventory"
         elif action == "M":
-            self.initItemList()
-            self.itemList["mode"] = "buy"
+            self.inititemListOptions()
+            self.itemListOptions["mode"] = "buy"
             self.store = Store(self.level)
             self.mode = "store"
             timeToShop = (self.map.playerPosition[0] + 1) * 10
-            self.itemList["message"] = f"{Style.DIM}This trip will take {timeToShop} turns..."
+            self.itemListOptions["message"] = f"{Style.DIM}This trip will take {timeToShop} turns..."
             self.incrementTurn(timeToShop)
         elif action == "S":
             self.createSave()
@@ -465,19 +466,19 @@ class Game:
 
     def inventoryResolve(self, action):
         if action == "E":
-            item = self.selectItem("Which item do you wish to equip?")
+            item = self.selectItem(self.player, "Which item do you wish to equip?")
             if item:
                 self.player.equipItem(item)
         if action == "P":
-            self.itemList["currPage"] -= 1
+            self.itemListOptions["currPage"] -= 1
         if action == "N":
-            self.itemList["currPage"] += 1
+            self.itemListOptions["currPage"] += 1
         if action == "F":
             self.filterItems()
         if action == "U":
-            item = self.selectItem("Use which item?")
+            item = self.selectItem(self.player, "Use which item?")
             if item:
-                used = self.resolveItem(item, self.itemList["mode"])
+                used = self.resolveItem(item, self.itemListOptions["mode"])
                 if used:
                     self.player.removeItem(item)
         if action == "C":
@@ -486,34 +487,36 @@ class Game:
 
     def storeResolve(self, action):
         if action == "B":
-            if self.itemList["mode"] == "sell":
-                self.itemList["mode"] = "buy"
+            if self.itemListOptions["mode"] == "sell":
+                self.itemListOptions["mode"] = "buy"
             else:
-                item = self.selectItem("Which item do you wish to buy?")
+                item = self.selectItem(self.store, "Which item do you wish to buy?")
                 if item:
-                    price = item.level * self.itemList["buyFactor"]
+                    price = item.level * self.itemListOptions["buyFactor"]
                     if price <= self.player.gp:
-                        self.itemList["message"] = f"{Fore.CYAN}You bought the {item.displayName}!"
-                        self.itemList["currPage"] = 0
+                        self.itemListOptions["message"] = f"{Fore.CYAN}You bought the {item.displayName}!"
+                        self.itemListOptions["currPage"] = 0
                         self.player.removeGold(price)
+                        self.store.removeItem(item)
                         self.player.addItem(item)
                     else:
-                        self.itemList["message"] = f"{Fore.RED}You can't afford the {item.displayName}!"
+                        self.itemListOptions["message"] = f"{Fore.RED}You can't afford the {item.displayName}!"
         if action == "S":
-            if self.itemList["mode"] == "buy":
-                self.itemList["mode"] = "sell"
+            if self.itemListOptions["mode"] == "buy":
+                self.itemListOptions["mode"] = "sell"
             else:
-                item = self.selectItem("Which item do you wish to sell?")
+                item = self.selectItem(self.player, "Which item do you wish to sell?")
                 if item:
-                    price = item.level * self.itemList["sellFactor"]
-                    self.itemList["message"] = f"{Fore.YELLOW}You sold your {item.displayName}!"
-                    self.itemList["currPage"] = 0
+                    price = item.level * self.itemListOptions["sellFactor"]
+                    self.itemListOptions["message"] = f"{Fore.YELLOW}You sold your {item.displayName}!"
+                    self.itemListOptions["currPage"] = 0
                     self.player.addGold(price)
                     self.player.removeItem(item)
+                    self.store.addItem(item)
         if action == "P":
-            self.itemList["currPage"] -= 1
+            self.itemListOptions["currPage"] -= 1
         if action == "N":
-            self.itemList["currPage"] += 1
+            self.itemListOptions["currPage"] += 1
         if action == "F":
             self.filterItems()
         if action == "L":

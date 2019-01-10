@@ -78,7 +78,9 @@ class Item:
         pageSize = options["pageSize"]
         filterValue = options["filter"]
         mode = options["mode"]
-
+        message = options["message"]
+        if mode in ["buy", "sell"]:
+            message = f"{Fore.YELLOW}GP: {options['gp']}  {Style.RESET_ALL}{message}"
         sourceType = type(source).__name__
         actions = []
         if sourceType == "Player":
@@ -103,7 +105,7 @@ class Item:
         leave = ["<L>eave"] if sourceType == "Store" else ["<C>lose"]
         filterOption = [] if mode == "combat" else ["<F>ilter"]
         out = actions + navigation + filterOption + leave
-        out = options["message"] + f"{Style.RESET_ALL}\n" + ", ".join(out)
+        out = message + f"{Style.RESET_ALL}\n" + ", ".join(out)
         options["message"] = ""
         return out
 
