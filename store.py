@@ -1,5 +1,4 @@
 import random
-from colorama import Fore, Back, Style
 
 from item import Item
 from utils import Utils

@@ -1,5 +1,6 @@
 import random
-from colorama import Fore, Back, Style
+
+from colored import fore, back, style
 
 from creature import Creature
 from item import Item
@@ -34,7 +35,8 @@ class Player(Creature):
                 "risky_win": 0,
                 "run_away": 0,
                 "kills": 0,
-                "sold_item": 0,
+                "buy_item": 0,
+                "sell_item": 0,
                 "dmg_done": 0,
                 "dmg_taken": 0,
                 "epitaph": "Still exploring..."
@@ -123,6 +125,11 @@ class Player(Creature):
     def incrementHistory(self, field, value = 1):
         self.history[field] += value
 
+    def drain(self, value):
+        self.xp -= value
+        if self.xp < 0:
+            self.xp = 0
+            
     def killedBy(self, monster, level):
         self.setEpitaph(f"Killed by a {monster.name} on level {level}.")
 
@@ -130,13 +137,13 @@ class Player(Creature):
         self.history["epitaph"] = text
 
     def printStats(self):
-        print(f"{Fore.BLUE}{Style.BRIGHT}{self.name}")
+        print(f"{fore.MAGENTA}{style.BOLD}{self.name}{style.RESET}")
 
-        hpColor = Fore.WHITE
-        if self.hp / self.maxHp <= .6:
-            hpColor = Fore.YELLOW
-        elif self.hp / self.maxHp <= .25:
-            hpColor = Fore.RED
+        hpColor = fore.WHITE
+        if self.hp / self.maxHp <= .25:
+            hpColor = fore.RED
+        elif self.hp / self.maxHp <= .6:
+            hpColor = fore.YELLOW
 
         stats = [
             {
@@ -145,8 +152,8 @@ class Player(Creature):
                 "GP": f"{self.gp}"
             },
             {
-                "HP": f"{hpColor}{self.hp}{Fore.WHITE} / {self.maxHp}         ",
-                "ATK": f"{self.atk} ({self.dam})",
+                "HP": f"{hpColor}{self.hp}{style.RESET} / {self.maxHp}",
+                "ATK": f"{self.atk} {Creature.calculateDam(self)}",
                 "AC": f"{self.ac}",
             }
         ]
@@ -161,8 +168,8 @@ class Player(Creature):
         print("Equipped: " + ", ".join(itemNames))
 
     def printHistory(self):
-        print(f"{Fore.MAGENTA}{Style.BRIGHT}{self.name}")
-        print(f"{Fore.RED}{self.history['epitaph']}\n")
+        print(f"{fore.MAGENTA}{style.BOLD}{self.name}{style.RESET}")
+        print(f"{fore.RED}{self.history['epitaph']}{style.RESET}\n")
 
         stats = [
             { 
@@ -174,7 +181,8 @@ class Player(Creature):
                 "Risky Wins": f"{self.history['risky_win']}" 
             },
             { 
-                "Items Sold": f"{self.history['sold_item']}" 
+                "Items Bought": f"{self.history['buy_item']}",
+                "Items Sold": f"{self.history['sell_item']}" 
             },
             { 
                 "Damage Done": f"{self.history['dmg_done']}",

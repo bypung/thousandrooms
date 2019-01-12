@@ -6,8 +6,7 @@ import copy
 import sys
 from types import *
 
-from colorama import init as coloramaInit
-from colorama import Fore, Back, Style
+from colored import fore, back, style
 
 from monster import Monster
 from item import Item
@@ -63,7 +62,11 @@ class Game:
             "time warp": self.timeWarpResolve,
             "shopping": self.shoppingResolve,
             "blinking": self.blinkingResolve,
-            "fireball": self.fireballResolve
+            "fireball": self.fireballResolve,
+            "digging": self.diggingResolve,
+            "teleport": self.teleportResolve,
+            "invisibility": self.invisibilityResolve,
+            "knowledge": self.knowledgeResolve
         }
         self.inititemListOptions()
         self.clearResolution()
@@ -86,16 +89,19 @@ class Game:
     def rollDie(self, size):
         return random.randint(1, size)
     
+    def rollDamage(self, creature):
+        return self.rollDie(creature.level) + self.rollDie(creature.level) + self.rollDie(creature.atk)
+    
     def incrementDungeonLevel(self):
         self.level += 1
-        self.nextLevel += (100 * self.level)
+        self.nextLevel = self.turn + (100 * self.level)
         self.map.dungeonLevel = self.level
 
     def incrementTurn(self, numTurns = 1):
         self.turn += numTurns
         if self.turn >= self.nextLevel:
             self.incrementDungeonLevel()
-            self.addResolution(f"{Fore.RED}The dungeon seems more dangerous...")
+            self.addResolution(f"{fore.RED}The dungeon seems more dangerous...")
     
 ### PRINTING METHODS ###
 
@@ -106,6 +112,9 @@ class Game:
         displayFunc = self.display[self.mode]
         displayFunc()
 
+    def printStatHeader(self):
+        print(f"{style.BOLD}Dungeon Level {self.map.playerPosition[0] + 1} - Turn {self.turn}{style.DIM}/{self.nextLevel}\n{style.RESET}")
+
     def clearResolution(self):
         self.resolution = []
 
@@ -114,21 +123,21 @@ class Game:
 
     def printResolution(self):
         if len(self.resolution) > 0:
-            print("\n" + "\n".join(self.resolution))
+            print("\n" + f"{style.RESET}\n".join(self.resolution) + style.RESET)
 
 ### DISPLAY METHODS ###
 
     def startDisplay(self):
-        print(f"{Style.BRIGHT}Welcome To The Dungeon!\n")
+        print(f"{style.BOLD}Welcome To The Dungeon!\n{style.RESET}")
 
     def combatDisplay(self):
-        print(f"{Style.BRIGHT}Dungeon Level {self.level} - Turn {self.turn}\n")
+        self.printStatHeader()
         self.player.printStats()
         print("")
         self.monster.printStats()
 
     def peaceDisplay(self):
-        print(f"{Style.BRIGHT}Dungeon Level {self.level} - Turn {self.turn}\n")
+        self.printStatHeader()
         self.player.printStats()
         print("")
         room = self.map.getCurrentRoom()
@@ -152,7 +161,7 @@ class Game:
         options = self.options[self.mode]
         if type(options) is LambdaType:
             options = options()
-        print(f"\n{Style.BRIGHT}{options}")
+        print(f"\n{style.BOLD}{options}")
 
 ### COMBAT METHODS ###
 
@@ -162,57 +171,91 @@ class Game:
         monsterDefense = self.monster.ac
             
         if atkRoll >= monsterDefense:
-            damRoll = self.rollDie(self.player.dam)
-            self.addResolution(f"{Fore.GREEN}You {self.player.getAtkVerb()} the {self.monster.name} for {damRoll}")
+            damRoll = self.rollDamage(self.player)
             damage = self.monster.damage(damRoll, self.player.atkType)
+            self.addResolution(f"{fore.GREEN}You {self.player.getAtkVerb()} the {self.monster.name} for {damage}")
             if damage < damRoll:
-                self.addResolution(f"{Fore.MAGENTA}Your weapon is not very effective.")
+                self.addResolution(f"{fore.MAGENTA}Your weapon is not very effective.")
             if damage > damRoll:
-                self.addResolution(f"{Fore.CYAN}Your weapon is very effective.")
+                self.addResolution(f"{fore.CYAN}Your weapon is very effective.")
             self.player.incrementHistory("dmg_done", damage)
         else:
-            self.addResolution(f"{Fore.WHITE}You miss!")
+            self.addResolution(f"{fore.WHITE}You miss!")
         # self.printRoll(atkRoll, monsterDefense)
                 
     def monsterAttack(self, playerDefending):
+        if not self.monster.charged:
+            chargeRoll = self.rollDie(10)
+            if chargeRoll == 1:
+                self.monster.charged = True
+                self.addResolution(f"{fore.DARK_ORANGE_3B}The {self.monster.name} readies an attack...")
+                return
+
         atkRoll = self.rollDie(20) + self.monster.atk
         
         playerDefense = self.player.ac
         if playerDefending:
-            playerDefense = playerDefense * 2
+            playerDefense = playerDefense * 2 - 10
 
         if atkRoll >= playerDefense:
-            damRoll = self.rollDie(self.monster.dam)
-            self.addResolution(f"{Fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {Style.BRIGHT}{damRoll}")
+            damRoll = self.rollDamage(self.monster)
+            self.addResolution(f"{fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {style.BOLD}{damRoll}")
             self.player.damage(damRoll, self.monster.atk_type)
             self.player.incrementHistory("dmg_taken", damRoll)
         else:
-            self.addResolution(f"{Fore.WHITE}The {self.monster.name} misses!")
+            self.addResolution(f"{fore.WHITE}The {self.monster.name} misses!")
+
+        if self.monster.charged:
+            self.monster.charged = False
+            specAtkRoll = self.rollDie(20) + self.monster.atk
+            if atkRoll >= playerDefense:
+                if self.monster.special == "drain":
+                    self.player.drain(random.randint(1, self.monster.level) * 50)
+                    self.addResolution(f"{fore.PALE_TURQUOISE_1}It drains your life essence!")
+                elif self.monster.special == "melt":
+                    meltables = [item for item in self.player.items if item.kind == "weapon" or item.type == "metal"]
+                    if len(meltables) > 0:
+                        item = random.choice(meltables)
+                        self.addResolution(f"{fore.CHARTREUSE_1}It melts your {item.displayName} with acid!")
+                        self.player.removeItem(item)
+                elif self.monster.special == "burn":
+                    burnables = [item for item in self.player.items if item.name == "Scroll" or item.type in ["cloth", "leather"]]
+                    if len(burnables) > 0:
+                        item = random.choice(burnables)
+                        self.addResolution(f"{fore.CHARTREUSE_1}It burns your {item.displayName} to ash!")
+                        self.player.removeItem(item)
+                else:
+                    damRoll = self.rollDamage(self.monster)
+                    self.addResolution(f"{fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {style.BOLD}{damRoll}")
+                    self.player.damage(damRoll, self.monster.atk_type)
+                    self.player.incrementHistory("dmg_taken", damRoll)
+            else:
+                self.addResolution(f"{fore.WHITE}Its special attack fails!")      
         # self.printRoll(atkRoll, playerDefense)
 
     def getReward(self, level):
-        xp = self.monster.level * 100
+        xp = self.monster.level * 50
         gp = self.monster.level * self.rollDie(10)
         self.player.xp += xp
         self.player.gp += gp
-        self.addResolution(f"\n{Fore.YELLOW}You got {xp} XP and {gp} GP")
+        self.addResolution(f"\n{fore.YELLOW}You got {xp} XP and {gp} GP")
         
         levelUp = self.player.checkLevelUp()
         if levelUp:
             if self.level < self.player.level:
                 self.incrementDungeonLevel()
-            self.addResolution(f"{Fore.YELLOW}You gained a level!")
+            self.addResolution(f"{fore.YELLOW}You gained a level!")
 
         item = Item(self.monster.level)
         if item.kind:
             self.player.addItem(item)
-            self.addResolution(f"{Fore.YELLOW}You found: {item.displayName}")
+            self.addResolution(f"{fore.YELLOW}You found: {item.displayName}")
 
     def monsterDeathCheck(self):
         if not self.monster:
             return
         if self.monster.hp <= 0:
-            self.addResolution(f"{Fore.GREEN}The {self.monster.name} dies!")
+            self.addResolution(f"{fore.GREEN}The {self.monster.name} dies!")
             self.map.getCurrentRoom().removeMonster()
             self.player.incrementHistory("kills")
             if self.player.hp <= self.player.maxHp * .25:
@@ -226,9 +269,21 @@ class Game:
                 
     def playerDeathCheck(self):
         if self.player.hp <= 0:
-            self.addResolution(f"{Fore.RED}{Style.BRIGHT}You die!")
-            self.player.killedBy(self.monster, self.level)
+            self.addResolution(f"{fore.RED}{style.BOLD}You die!")
+            self.player.killedBy(self.monster, self.map.playerPosition[0])
             self.mode = "gameOver"
+
+    def playerEscape(self):
+        self.monster.charged = False
+        self.monster = None
+        exits = [e for e in self.map.getCurrentDoors() if e[1].used]
+        if len(exits) == 0:
+            exits = self.map.getCurrentDoors()
+        door = random.choice(exits)
+        self.map.movePlayer(door[0])
+        newRoom = self.map.getCurrentRoom()
+        self.monster = newRoom.monster
+        self.mode = "combat" if self.monster else "peace"
 
 ### ITEM METHODS ###
 
@@ -248,7 +303,7 @@ class Game:
         self.itemListOptions["filter"] = filterValue
 
     def selectItem(self, source, prompt):
-        sys.stdout.write(f"{prompt} {Style.DIM}<Enter> to cancel {Style.NORMAL}")
+        sys.stdout.write(f"{prompt} {style.DIM}<Enter> to cancel {style.RESET}")
         complete = False
         while not complete:
             itemNum = input()
@@ -268,45 +323,91 @@ class Game:
                     print("Please enter an integer")
 
     def resolveItem(self, item, mode):
+        if item.kind != "usable":
+            return False
         if mode == "combat" and item.type == "peace":
             return False
-        if mode == "manage" and item.type == "combat":
+        if mode == "peace" and item.type == "combat":
             return False
 
         effect = item.effect
         escaped = False
 
         try:
-            escaped = self.effectResolvers[effect]()
+            used = self.effectResolvers[effect]()
         except KeyError:
             pass
 
-        if not escaped:
-            self.monsterDeathCheck()
-
-        self.mode = "combat" if self.monster else "peace"
-        self.incrementTurn()
-        return True
+        if used:
+            if self.monster:
+                self.mode = "combat"
+                self.monsterDeathCheck()
+            elif self.mode != "store": 
+                self.mode = "peace"
+            self.incrementTurn()
+        return used
 
     def healingResolve(self):
         self.player.heal(self.player.maxHp // 2)
-        self.addResolution(f"{Fore.GREEN}You feel much better!")
-        return False
+        self.addResolution(f"{fore.GREEN}You feel much better!")
+        return True
 
     def timeWarpResolve(self):
-        self.level -= 1
-        self.nextLevel += self.level * 100
-        self.addResolution(f"{Fore.GREEN}The dungeon feels less dangerous...")
-        return False
+        self.nextLevel += self.level * 50
+        self.addResolution(f"{fore.GREEN}The dungeon feels less dangerous...")
+        return True
+
+    def invisibilityResolve(self):
+        self.playerEscape()
+        self.addResolution(f"{fore.CYAN}You turn invisible and sneak away!")
+        return True
+
+    def knowledgeResolve(self):
+        self.map.discoverStairs()
+        self.addResolution(f"{fore.CYAN}The secrets of the dungeon become clearer...")
+        return True
+
+    def teleportResolve(self):
+        pp = self.map.playerPosition
+        prompt = "Teleport which direction?"
+        validDirs = []
+        if pp[1] > 0:
+            validDirs += "n"
+            prompt += " <N>orth"
+        if pp[1] < self.map.width - 1:
+            validDirs += "s"
+            prompt += " <S>outh"
+        if pp[2] < self.map.width - 1:
+            validDirs += "e"
+            prompt += " <E>ast"
+        if pp[2] > 0:
+            validDirs += "w"
+            prompt += " <W>est"
+        prompt += f"{style.DIM} <Enter> to cancel {style.RESET}"
+        sys.stdout.write(prompt)
+        choice = input()
+        if choice and choice in validDirs:
+            teleport = {
+                "n": lambda: self.map.setPlayerPosition(pp[0], random.randint(0, pp[1] - 1), pp[2]),
+                "s": lambda: self.map.setPlayerPosition(pp[0], random.randint(pp[1] + 1, self.map.width - 1), pp[2]),
+                "e": lambda: self.map.setPlayerPosition(pp[0], pp[1], random.randint(pp[2] + 1, self.map.width - 1)),
+                "w": lambda: self.map.setPlayerPosition(pp[0], pp[1], random.randint(0, pp[2] - 1))
+            }
+            teleport[choice]()
+            self.addResolution(f"{fore.CYAN}You are magically transported!")
+            return True
+        else: 
+            return False
 
     def shoppingResolve(self):
         self.inititemListOptions()
         self.itemListOptions["mode"] = "buy"
+        self.store = Store(self.level)
         self.mode = "store"
         bonus = self.player.level * 10
         self.player.gp += bonus
-        self.addResolution(f"{Fore.YELLOW}You are transported to the store with an extra {bonus} GP!")
-        return False
+        self.itemListOptions["message"] = f"{fore.YELLOW}You are transported to the store with an extra {bonus} GP!"
+        return True
 
     def blinkingResolve(self):
         pp = self.map.playerPosition
@@ -317,17 +418,49 @@ class Game:
         newPos = (random.randint(minR, maxR), random.randint(minC, maxC))
         while newPos == (pp[1], pp[2]):
             newPos = (random.randint(minR, maxR), random.randint(minC, maxC))
-        self.map.setPlayerPosition(pp[0], newPos[0]. newPos[1])
-        self.addResolution(f"{Fore.MAGENTA}You are transported to another room!")
+        self.map.setPlayerPosition(pp[0], newPos[0], newPos[1])
+        self.addResolution(f"{fore.MAGENTA}You are transported to another room!")
         newRoom = self.map.getCurrentRoom()
-        newRoom.generateContents()
+        newRoom.generateContents(self.level)
         self.monster = newRoom.monster
         if self.monster:
             self.mode = "combat"
-            return False
         else:
             self.mode = "peace"
-            return True
+        return True
+
+    def diggingResolve(self):
+        room = self.map.getCurrentRoom()
+        doors = [door for door in self.map.getCurrentDoors() if not door[1].exists]
+
+        if len(doors) == 0:
+            self.itemListOptions["message"] = f"{fore.ORANGE}There's nowhere to dig!"
+            return False
+
+        prompt = "Dig which direction?"
+        for (doorDir, door) in doors:
+            if doorDir == "n":
+                prompt += " <N>orth"
+            elif doorDir == "s":
+                prompt += " <S>outh"
+            elif doorDir == "e":
+                prompt += " <E>ast"
+            elif doorDir == "w":
+                prompt += " <W>est"
+        prompt += f"{style.DIM} <Enter> to cancel {style.RESET}"
+        sys.stdout.write(prompt)
+        choice = input()
+        if choice == "":
+            return False
+        choice = choice[0].lower()
+        for (doorDir, door) in doors:
+            if choice == doorDir:
+                door.exists = True
+                self.mode = "peace"
+                self.addResolution(f"{fore.DARK_ORANGE_3B}You dug a new door!")
+                return True
+        return False
+             
 
     def fireballResolve(self):
         dam = 0
@@ -337,9 +470,9 @@ class Game:
             dam = dam // 2
         if self.monster.vulnerability == "fire":
             dam = dam * 2
-        self.monster.damage(dam)
-        self.addResolution(f"{Fore.GREEN}The {self.monster.displayName} is blasted for {dam}!")
-        return False
+        self.monster.damage(dam, "fire")
+        self.addResolution(f"{fore.GREEN}The {self.monster.name} is blasted for {dam}!")
+        return True
 
 ### RESOLUTION METHODS ###
 
@@ -349,9 +482,9 @@ class Game:
         elif action in ["N", "S", "E", "W", "U", "D"]:
             direction = action.lower()
             for key, door in self.map.getCurrentDoors():
-                if key[0] == direction and door.exists:
+                if key[0] == direction and door.isValid():
                     if direction == "u" and self.map.playerPosition[0] == 0:
-                        print(f"{Fore.MAGENTA}{Style.BRIGHT}Are you sure you want to exit the dungeon? <Y>es or <N>o")
+                        print(f"{fore.MAGENTA}{style.BOLD}Are you sure you want to exit the dungeon? <Y>es or <N>o{style.RESET}")
                         choice = input()
                         if choice.lower() == "y":
                             self.mode = "gameOver"
@@ -403,18 +536,12 @@ class Game:
             self.itemListOptions["filter"] = "usable"
             self.itemListOptions["mode"] = "combat"
         elif action == "R":
+            self.monster.heal(self.monster.hd * self.monster.level // 4)
             self.player.incrementHistory("run_away")
-            exits = self.map.getCurrentDoors()
-            escaped = False
-            while not escaped:
-                door = random.choice(exits)
-                if (door[1].used):
-                    self.map.movePlayer(door[0])
-                    escaped = True
-            self.mode = "peace"
+            self.playerEscape()
             if 'running' in self.player.abilities:
                 self.incrementTurn(10 - self.player.getAbilityLevel('running'))
-                self.addResolution(f"{Fore.GREEN}You run away very quickly!")
+                self.addResolution(f"{fore.GREEN}You run away very quickly!")
             else:
                 self.incrementTurn(10)
                 self.addResolution("You run away!")
@@ -430,7 +557,7 @@ class Game:
             restFactor = math.sqrt(self.player.level)
             if 'regeneration' in self.player.abilities:
                 restFactor -= 0.2 * self.player.getAbilityLevel('regeneration')
-                self.addResolution(f"{Fore.GREEN}You heal quickly...")
+                self.addResolution(f"{fore.GREEN}You heal quickly...")
             timeToRest = math.floor((self.player.maxHp - self.player.hp) * restFactor)
             self.player.heal()
             self.player.incrementHistory("rest")
@@ -444,7 +571,7 @@ class Game:
             self.store = Store(self.level)
             self.mode = "store"
             timeToShop = (self.map.playerPosition[0] + 1) * 10
-            self.itemListOptions["message"] = f"{Style.DIM}This trip will take {timeToShop} turns..."
+            self.itemListOptions["message"] = f"{style.DIM}This trip will take {timeToShop} turns..."
             self.incrementTurn(timeToShop)
         elif action == "S":
             self.createSave()
@@ -482,7 +609,7 @@ class Game:
                 if used:
                     self.player.removeItem(item)
         if action == "C":
-            self.mode = "peace"
+            self.mode = self.itemListOptions["mode"]
         return True
 
     def storeResolve(self, action):
@@ -494,21 +621,23 @@ class Game:
                 if item:
                     price = item.level * self.itemListOptions["buyFactor"]
                     if price <= self.player.gp:
-                        self.itemListOptions["message"] = f"{Fore.CYAN}You bought the {item.displayName}!"
+                        self.player.incrementHistory("buy_item")
+                        self.itemListOptions["message"] = f"{fore.CYAN}You bought the {item.displayName}!"
                         self.itemListOptions["currPage"] = 0
                         self.player.removeGold(price)
                         self.store.removeItem(item)
                         self.player.addItem(item)
                     else:
-                        self.itemListOptions["message"] = f"{Fore.RED}You can't afford the {item.displayName}!"
+                        self.itemListOptions["message"] = f"{fore.RED}You can't afford the {item.displayName}!"
         if action == "S":
             if self.itemListOptions["mode"] == "buy":
                 self.itemListOptions["mode"] = "sell"
             else:
                 item = self.selectItem(self.player, "Which item do you wish to sell?")
                 if item:
+                    self.player.incrementHistory("sell_item")
                     price = item.level * self.itemListOptions["sellFactor"]
-                    self.itemListOptions["message"] = f"{Fore.YELLOW}You sold your {item.displayName}!"
+                    self.itemListOptions["message"] = f"{fore.YELLOW}You sold your {item.displayName}!"
                     self.itemListOptions["currPage"] = 0
                     self.player.addGold(price)
                     self.player.removeItem(item)
@@ -541,6 +670,7 @@ class Game:
         self.takeInput()
 
     def createSave(self):
+        sys.stdout.write(f"{style.DIM}.")
         saveObj = {
             "player": dict(copy.deepcopy(self.player).__dict__),
             "map": dict(copy.deepcopy(self.map).__dict__),
@@ -552,8 +682,10 @@ class Game:
         }
 
         # make player items serializable
+        sys.stdout.write(fore.BLUE)
         saveObj["items"] = []
         for item in saveObj["player"]["items"]:
+            sys.stdout.write(".")
             saveObj["items"].append(item.__dict__)
         del saveObj["player"]["items"]
 
@@ -566,7 +698,9 @@ class Game:
         }
         saveObj["map"]["stairs"] = {}
 
+        sys.stdout.write(fore.GREEN)
         for f, floor in enumerate(saveObj["map"]["floors"]):
+            sys.stdout.write(".")
             for r in range(self.map.width):
                 for c in range(self.map.width):
                     saveKey = f"{f}-{r}-{c}"
@@ -591,6 +725,7 @@ class Game:
                     except KeyError:
                         pass
 
+        sys.stdout.write(f"\n{style.RESET}")
         del saveObj["map"]["floors"]
 
         # save the file
@@ -608,7 +743,7 @@ class Game:
 
 
 clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
-coloramaInit(autoreset=True)
+# coloramaInit(autoreset=True)
 game = Game()
 while not game.quit:
     game.nextTurn()

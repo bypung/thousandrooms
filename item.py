@@ -1,6 +1,6 @@
 import random
 
-from colorama import Fore, Back, Style
+from colored import fore, back, style
 
 import item_list
 from utils import Utils
@@ -16,11 +16,11 @@ class Item:
             for i in data:
                 setattr(self, i, data[i])
         else:
-            info = self.getItem(self.level)
+            info = self.getItem(level)
             if info != None:
                 for i in info:
                     setattr(self, i, info[i])
-
+                
                 if self.ability:
                     self.displayName = f"{self.name} of {self.ability.title()}"
                 elif self.effect:
@@ -33,11 +33,11 @@ class Item:
                     levelDiff = level - self.level
                     if levelDiff > 0:
                         try:
-                            descriptor = item_list.descriptors[self.kind][levelDiff]
+                            descriptor = item_list.descriptors[self.kind][levelDiff - 1]
                         except KeyError:
                             pass
                         try:
-                            descriptor = item_list.descriptors[self.kind][self.type][levelDiff]
+                            descriptor = item_list.descriptors[self.kind][self.type][levelDiff - 1]
                         except KeyError:
                             pass
                         except TypeError:
@@ -49,23 +49,40 @@ class Item:
                         if self.ac:
                             self.ac += levelDiff
 
+                if self.kind in ["weapon", "armor"]:
+                    egoChance = random.randint(1,100)
+                    if egoChance <= level:
+                        self.generateEgo()
+
+    def generateEgo(self):
+        if self.kind == "weapon":
+            ego = random.choice(item_list.weaponEgo)
+            self.atk += ego["bonus"]
+        else:
+            ego = random.choice(item_list.armorEgo)
+            self.ac += ego["bonus"]
+
+        self.displayName += f" of {ego['name']}"
+        for key in ego["attributes"]:
+            setattr(self, key, ego["attributes"][key])
+
     @staticmethod
     def getItem(level):
-        itemRoll = random.randint(level * 3, 100)
+        itemRoll = random.randint(level, 100)
         kind = "none"
         
-        if itemRoll < 45:
+        if itemRoll < 80:
             return None
-        if itemRoll < 70:
+        if itemRoll < 88:
             kind = "usable"
-        elif itemRoll < 85:
+        elif itemRoll < 93:
             kind = "weapon"
-        elif itemRoll < 95:
+        elif itemRoll < 98:
             kind = "armor"
         else:
             kind = "ring"
     
-        if kind == "usable":
+        if kind in ["usable", "ring"]:
             items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level] 
         else:
             items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 5] 
@@ -80,7 +97,7 @@ class Item:
         mode = options["mode"]
         message = options["message"]
         if mode in ["buy", "sell"]:
-            message = f"{Fore.YELLOW}GP: {options['gp']}  {Style.RESET_ALL}{message}"
+            message = f"{fore.YELLOW}GP: {options['gp']}  {style.RESET}{message}"
         sourceType = type(source).__name__
         actions = []
         if sourceType == "Player":
@@ -105,7 +122,7 @@ class Item:
         leave = ["<L>eave"] if sourceType == "Store" else ["<C>lose"]
         filterOption = [] if mode == "combat" else ["<F>ilter"]
         out = actions + navigation + filterOption + leave
-        out = message + f"{Style.RESET_ALL}\n" + ", ".join(out)
+        out = message + f"{style.RESET}\n" + ", ".join(out) + style.RESET
         options["message"] = ""
         return out
 
@@ -118,10 +135,10 @@ class Item:
  
         filterHeader = "" if filterValue == "all" else f" ({filterValue.title()})"
         if sourceType == "Player":
-            print(f"{Fore.CYAN}{Style.BRIGHT}{source.name}'s Inventory{filterHeader}")
+            print(f"{fore.CYAN}{style.BOLD}{source.name}'s Inventory{filterHeader}{style.RESET}")
             valueFactor = options["sellFactor"]
         elif sourceType == "Store":
-            print(f"{Fore.MAGENTA}{Style.BRIGHT}Store Inventory{filterHeader}")
+            print(f"{fore.MAGENTA}{style.BOLD}Store Inventory{filterHeader}{style.RESET}")
             valueFactor = options["buyFactor"]
 
         filteredItems = source.items if filterValue == "all" else list(filter(lambda i: i.kind == filterValue, source.items))
@@ -140,11 +157,11 @@ class Item:
                 "Value": f"{item.level * valueFactor}"
             }
             if sourceType == "Player":
-                line["_color"] = Fore.GREEN if item.equipped else Fore.WHITE
+                line["_color"] = fore.GREEN if item.equipped else style.RESET
 
             itemLines.append(line)
 
-        Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], itemLines, [30, 8, 12, 8, 8])
+        Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], itemLines, [40, 8, 12, 8, 8])
 
     @staticmethod
     def getFilteredItem(source, options, index):

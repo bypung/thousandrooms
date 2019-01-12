@@ -41,7 +41,7 @@ items = [
   },
   {
     "kind": "weapon",
-    "name": "Mace",
+    "name": "Staff",
     "level": 2,
     "ac": "",
     "atk": 2,
@@ -71,7 +71,7 @@ items = [
   },
   {
     "kind": "weapon",
-    "name": "Warhammer",
+    "name": "Mace",
     "level": 3,
     "ac": "",
     "atk": 3,
@@ -101,7 +101,7 @@ items = [
   },
   {
     "kind": "weapon",
-    "name": "Morningstar",
+    "name": "Warhammer",
     "level": 4,
     "ac": "",
     "atk": 4,
@@ -111,10 +111,100 @@ items = [
   },
   {
     "kind": "weapon",
-    "name": "Trident",
+    "name": "Rapier",
     "level": 4,
     "ac": "",
     "atk": 4,
+    "type": "pierce",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Flamberge",
+    "level": 5,
+    "ac": "",
+    "atk": 5,
+    "type": "slash",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Morningstar",
+    "level": 5,
+    "ac": "",
+    "atk": 5,
+    "type": "blunt",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Pick",
+    "level": 5,
+    "ac": "",
+    "atk": 5,
+    "type": "pierce",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Glaive",
+    "level": 6,
+    "ac": "",
+    "atk": 6,
+    "type": "slash",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Flail",
+    "level": 6,
+    "ac": "",
+    "atk": 6,
+    "type": "blunt",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Pike",
+    "level": 6,
+    "ac": "",
+    "atk": 6,
+    "type": "pierce",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Halberd",
+    "level": 7,
+    "ac": "",
+    "atk": 7,
+    "type": "slash",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Maul",
+    "level": 7,
+    "ac": "",
+    "atk": 7,
+    "type": "blunt",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "weapon",
+    "name": "Trident",
+    "level": 7,
+    "ac": "",
+    "atk": 7,
     "type": "pierce",
     "ability": "",
     "effect": ""
@@ -141,9 +231,29 @@ items = [
   },
   {
     "kind": "armor",
-    "name": "Maille Hauberk",
-    "level": 2,
-    "ac": 2,
+    "name": "Hauberk",
+    "level": 3,
+    "ac": 3,
+    "atk": "",
+    "type": "metal",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Jack",
+    "level": 4,
+    "ac": 4,
+    "atk": "",
+    "type": "leather",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Brigandine",
+    "level": 5,
+    "ac": 5,
     "atk": "",
     "type": "metal",
     "ability": "",
@@ -152,8 +262,18 @@ items = [
   {
     "kind": "armor",
     "name": "Breastplate",
-    "level": 2,
-    "ac": 2,
+    "level": 6,
+    "ac": 6,
+    "atk": "",
+    "type": "metal",
+    "ability": "",
+    "effect": ""
+  },
+  {
+    "kind": "armor",
+    "name": "Cuirass",
+    "level": 7,
+    "ac": 7,
     "atk": "",
     "type": "metal",
     "ability": "",
@@ -162,7 +282,7 @@ items = [
   {
     "kind": "ring",
     "name": "Ring of Shielding",
-    "level": 1,
+    "level": 3,
     "ac": 1,
     "atk": "",
     "type": "",
@@ -278,6 +398,16 @@ items = [
     "type": "combat",
     "ability": "",
     "effect": "fireball"
+  },
+  {
+    "kind": "usable",
+    "name": "Potion",
+    "level": 4,
+    "ac": "",
+    "atk": "",
+    "type": "peace",
+    "ability": "",
+    "effect": "knowledge"
   }
 ]
 
@@ -333,7 +463,12 @@ descriptors = {
         "Golden",
         "Jeweled",
         "Glowing",
-        "Elvish"
+        "Elvish",
+        "Dwarvish",
+        "Starmetal",
+        "Quicksilver",
+        "Crystal",
+        "Dragonbone"
     ]
 }
 
@@ -362,5 +497,101 @@ atkVerb = {
         "scorch",
         "burn",
         "char"
+    ],
+    "electric": [
+        "shock",
+        "zap",
+        "jolt"
+    ],
+    "cold": [
+        "freeze",
+        "chill",
+        "frost"
     ]
 }
+
+weaponEgo = [
+  {
+    "name": "Flame",
+    "bonus": 1,
+    "attributes": {
+      "type": "fire"
+    }
+  },
+  {
+    "name": "Frost",
+    "bonus": 1,
+    "attributes": {
+      "type": "cold"
+    }
+  },
+  {
+    "name": "Acid",
+    "bonus": 1,
+    "attributes": {
+      "type": "acid"
+    }
+  },
+  {
+    "name": "Shock",
+    "bonus": 1,
+    "attributes": {
+      "type": "electric"
+    }
+  },
+  {
+    "name": "Power",
+    "bonus": 2,
+    "attributes": {}
+  }
+]
+
+armorEgo = [
+  {
+    "name": "Cooling",
+    "bonus": 1,
+    "attributes": {
+      "effect": "resist_fire"
+    }
+  },
+  {
+    "name": "Warmth",
+    "bonus": 1,
+    "attributes": {
+      "type": "resist_cold"
+    }
+  },
+  {
+    "name": "Alkali",
+    "bonus": 1,
+    "attributes": {
+      "type": "resist_acid"
+    }
+  },
+  {
+    "name": "Insulation",
+    "bonus": 1,
+    "attributes": {
+      "type": "resist_electric"
+    }
+  },
+  {
+    "name": "Health",
+    "bonus": 0,
+    "attributes": {
+      "effect": "regeneration" 
+    }
+  },
+  {
+    "name": "Speed",
+    "bonus": 0,
+    "attributes": {
+      "effect": "running" 
+    }
+  },
+  {
+    "name": "Defense",
+    "bonus": 2,
+    "attributes": {}
+  }
+]

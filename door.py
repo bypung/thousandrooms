@@ -9,7 +9,7 @@ class Door:
                 setattr(self, k, data[k])
         else:
             self.type = doorType
-            self.exists = True if doorType == "stairs" else random.choice([True, True, False])
+            self.exists = random.choice([True, True, False])
             self.seen = False
             self.used = False
 
@@ -18,6 +18,9 @@ class Door:
 
     def useDoor(self):
         self.used = True
+
+    def isValid(self):
+        return True if self.type == "stairs" else self.exists
 
     def printMap(self):
         out = Fore.WHITE if self.exists and self.seen else Fore.BLACK

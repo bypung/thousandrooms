@@ -1,6 +1,6 @@
 import random
 
-from colorama import Fore, Back, Style
+from colored import fore, back, style
 
 import monster_list
 from creature import Creature
@@ -8,6 +8,8 @@ from utils import Utils
 
 class Monster(Creature):
     def __init__(self, level, data = None):
+        level = random.randint(max(1, level - 1), level + 1)
+        self.charged = False
         if data:
             for k in data:
                 setattr(self, k, data[k])
@@ -18,15 +20,14 @@ class Monster(Creature):
             # improved monsters
             levelDiff = level - self.level
             if levelDiff > 0:
-                descriptor = monster_list.descriptors[self.type][levelDiff]
+                descriptor = monster_list.descriptors[self.type][levelDiff - 1]
                 try:
-                    descriptor = monster_list.descriptors[self.subtype][levelDiff]
+                    descriptor = monster_list.descriptors[self.subtype][levelDiff - 1]
                 except KeyError:
                     pass
                 self.name = f"{descriptor} {self.name}"
                 self.level += levelDiff
                 self.atk += levelDiff
-                Creature.calculateDam(self)
 
             self.hp = 0
             for x in range(level):
@@ -35,12 +36,12 @@ class Monster(Creature):
             self.ac += 10 + levelDiff
                     
     def printStats(self):
-        print(f"{Fore.RED}{Style.BRIGHT}{self.name} ({str(self.level)})")
+        print(f"{fore.RED}{style.BOLD}{self.name} ({str(self.level)}){style.RESET}")
         stats = [
             {
-                "HP": str(self.hp),
-                "ATK": f"{str(self.atk)} ({str(self.dam)})",
-                "AC": str(self.ac),
+                "HP": f"{self.hp}",
+                "ATK": f"{self.atk} {Creature.calculateDam(self)}",
+                "AC": f"{self.ac}"
             }
         ]
         Utils.printStats(stats)

@@ -1,7 +1,8 @@
 import random
 import copy
 import sys
-from colorama import Fore, Back, Style
+
+from colored import fore, back, style
 
 from room import Room
 from door import Door
@@ -136,7 +137,10 @@ class Map:
         room.known = True
 
         if startRoom:
+            room.hasContents = True
             room.monster = None
+        if not room.hasContents:
+            room.generateContents(self.dungeonLevel)
         
         for key, door in self.getCurrentDoors():
             door.seen = True
@@ -154,15 +158,15 @@ class Map:
         floor = self.playerPosition[0]
         mapBuffer = []
         legendBuffer = [
-            f"{Fore.CYAN}{Style.BRIGHT}Legend:", 
-            f"{Fore.GREEN}[ ]{Fore.WHITE} / {Fore.RED}[ ]{Fore.WHITE} : Stairs Up/Down"
+            f"{fore.CYAN}{style.BOLD}Legend:{style.RESET}", 
+            f"{fore.GREEN}[ ]{fore.WHITE} / {fore.RED}[ ]{style.RESET} : Stairs Up/Down"
         ]
 
         ppSlug = f"[{self.playerPosition[1]},{self.playerPosition[2]}]"
-        print(f"{Fore.MAGENTA}{Style.BRIGHT}Dungeon Level {floor + 1} - Turn {turn}")
+        print(f"{fore.MAGENTA}{style.BOLD}Dungeon Level {floor + 1} - Turn {turn}{style.RESET}")
 
         # print top map header
-        header = f"{Style.DIM}  "
+        header = f"{style.DIM}  "
         for c in range(self.width):
             header +=(f" {c} ")
             if (c < self.width - 1):
@@ -172,7 +176,7 @@ class Map:
         # print map rows
         for r in range(self.width):
             roomRow = ""
-            roomRow += f"{Style.DIM}{r} {Style.NORMAL}"
+            roomRow += f"{style.DIM}{r} {style.RESET}"
             for c in range(self.width):
                 room = self.floors[floor]["rooms"][(r,c)]
                 isCurrentRoom = self.playerPosition[1] == r and self.playerPosition[2] == c
@@ -209,7 +213,7 @@ class Map:
                 legendLine = legendBuffer[b]
             except IndexError:
                 pass
-            print(f"{mapLine} {Style.DIM}| {Style.NORMAL}{legendLine}")
+            print(f"{mapLine} {style.DIM}| {style.RESET}{legendLine}")
 
     def getCurrentDoors(self):
         floor = self.floors[self.playerPosition[0]]
@@ -232,13 +236,22 @@ class Map:
                 out.append((stair.stairDir, stair))  
         return out
 
+    def discoverStairs(self):
+        pp = self.playerPosition
+        floor = self.floors[pp[0]]
+        for key, stair in floor["stairs"].items():
+            if stair.stairDir == "down":
+                room = self.getRoom(pp[0], key[0], key[1])
+                room.generateContents(self.dungeonLevel)
+                return
+
     def getOptions(self):
-        out = f"{Style.BRIGHT}"
+        out = f"{style.BOLD}"
         options = []
         doors = []
         stairs = []
         for direction, door in self.getCurrentDoors():
-            if (door.exists):
+            if (door.isValid()):
                 if direction == "n":
                     doors += ["<N>orth"]
                 if direction == "s":

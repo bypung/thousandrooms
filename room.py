@@ -1,11 +1,16 @@
 import random
-from colorama import Fore, Back, Style
+from colored import fore, back, style
 
 from monster import Monster
 import room_list
 
 class Room:
     def __init__(self, location, data = None, monsterData = None):
+        self.seen = False
+        self.known = False
+        self.hasContents = False
+        self.monster = None
+        self.trap = None
         if data:
             for k in data:
                 setattr(self, k, data[k])
@@ -15,13 +20,11 @@ class Room:
                 self.monster = None
         else:
             self.generateName()
-            self.seen = False
-            self.known = False
-            self.monster = None
-            self.trap = None
+            self.hasContents = self.known
 
     def generateContents(self, level):
-        if not self.known:
+        if not self.hasContents:
+            self.hasContents = True
             self.known = True
             self.monster = Monster(level)
 
@@ -33,10 +36,10 @@ class Room:
             if key in descriptorKeys:
                 descriptors.append(random.choice(room_list.descriptors[key]))
 
-        self.name = f"{Fore.CYAN}A {' '.join(descriptors)} room"
+        self.name = f"{fore.CYAN}A {' '.join(descriptors)} room"
 
     def printStats(self, exits):
-        print(self.name)
+        print(self.name + style.RESET)
         doors = []
         stairs = ""
         for exitDir, exitObj in exits:
@@ -64,7 +67,7 @@ class Room:
     def getMapIcon(self):
         out = " "
         if self.monster and self.seen:
-            out = f"{Back.RED}{Fore.WHITE}{self.monster.name[0]}{Style.RESET_ALL}"
+            out = f"{back.RED}{fore.WHITE}{self.monster.name[0]}{style.RESET}"
         return out
 
     def removeMonster(self):
@@ -72,14 +75,14 @@ class Room:
 
     def printMap(self, isCurrentRoom, stairs = ""):
         out = ""
-        wallColor = Fore.WHITE
+        wallColor = fore.WHITE
         if not self.known:
-            wallColor = Fore.BLACK
+            wallColor = fore.BLACK
         elif stairs:
-            wallColor = Fore.RED if stairs == "down" else Fore.GREEN
+            wallColor = fore.RED if stairs == "down" else fore.GREEN
         if not self.seen:
-            out += f"{Style.DIM}"
-        out += f"{wallColor}[{Fore.WHITE}"
+            out += f"{style.DIM}"
+        out += f"{wallColor}[{fore.WHITE}"
         out += "*" if isCurrentRoom else self.getMapIcon()
-        out += f"{wallColor}]{Fore.WHITE}{Style.NORMAL}"
+        out += f"{wallColor}]{fore.WHITE}{style.RESET}"
         return out

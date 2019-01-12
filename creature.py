@@ -1,4 +1,4 @@
-from colorama import Fore, Back, Style
+from colored import fore, back, style
 from utils import Utils
 
 class Creature:
@@ -9,7 +9,7 @@ class Creature:
         self.calculateDam()
 
     def calculateDam(self):
-        self.dam = self.atk + (self.level * 2)
+        return f"{style.DIM}({self.atk + (self.level * 2)}){style.RESET}"
 
     def damage(self, value, type):
         damage = value
