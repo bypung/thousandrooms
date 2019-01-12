@@ -570,6 +570,87 @@ descriptors = {
     ]
 }
 
+bossDescriptors = {
+    "humanoid" : [
+        ("", "King"),
+        ("Mighty", "Warrior"),
+        ("Ultimate", "")
+    ],
+    "animal" : [
+        ("Prehistoric", ""),
+        ("Legendary", ""),
+        ("", "of the Wildlands")
+    ],
+    "reptile" : [
+        ("Enormous", ""),
+        ("Cthonic", ""),
+        ("Fanged", "")
+    ],
+    "insect" : [
+        ("", "Queen"),
+        ("Emerald", ""),
+        ("Winged", "")
+    ],
+    "undead" : [
+        ("", "Lord"),
+        ("Unholy", ""),
+        ("", "of Nightmares")
+    ],
+    "aberration" : [
+        ("Royal", ""),
+        ("Great Old", ""),
+        ("", "That Never Sleeps")
+    ],
+    "demon" : [
+        ("Noble", "of Dis"),
+        ("Damned", ""),
+        ("", "Torturer")
+    ],
+    "dragon" : [
+        ("Mother", ""),
+        ("Golden-Winged", ""),
+        ("Black", "of the Pit")
+    ]
+}
+
+bossQuotes = {
+    "humanoid" : [
+        '"You\'ll never survive me!"',
+        '"I\'m your worst nightmare!"',
+        '"Come a little closer..."'
+    ],
+    "animal" : [
+        "It roars a challenge!",
+        "The ground shakes as it stomps toward you!"
+        "You feel its eyes on you..."
+    ],
+    "insect" : [
+        "Venom drips from its fangs!",
+        "It chitters menacingly...",
+        "It gathers itself to strike..."
+    ],
+    "undead" : [
+        '"Join me in the world beyond life!"',
+        "Its eyes glow with a cold light...",
+        '"Life is wasted on the living!"'
+    ],
+    "aberration" : [
+        "It contorts weirdly...",
+        "You see unnatural shapes in its surface...",
+        "It surges toward you!"
+    ],
+    "demon" : [
+        '"The underworld awaits!"',
+        '"Time to pay for your sins!"',
+        '"Feel the flames of the Abyss!"'
+    ],
+    "dragon" : [
+        '"You look tasty..."',
+        "It coils itself, ready to attack!",
+        '"My treasures are mine alone!"'
+    ]
+}
+
 atkVerbs = {
     "humanoid": {
         "slash": [

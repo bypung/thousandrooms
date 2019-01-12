@@ -417,19 +417,28 @@ descriptors = {
             "Pointy",
             "Sharp",
             "Keen",
+            "Piercing",
             "Barbed",
-            "Piercing"
+            "Impaling",
+            "Stabbing",
+            "Needle"
         ],
         "slash": [
             "Honed",
             "Jagged",
             "Razor",
             "Gleaming",
+            "Serrated",
+            "Keen",
+            "Tempered",
             "Vorpal"
         ],
         "blunt": [
             "Hardened",
+            "Dense",
             "Faceted",
+            "Heavy",
+            "Leaden",
             "Massive",
             "Crushing",
             "Unstoppable"
@@ -437,23 +446,32 @@ descriptors = {
     },
     "armor": {
         "cloth": [
+            "Thick",
+            "Wool",
             "Patterned",
             "Silk",
             "Embroidered",
             "Brocade",
+            "Goldworked",
             "Mageweave"
         ],
         "leather": [
+            "Deerskin",
             "Waxed",
+            "Hardened",
             "Embossed",
             "Tooled",
+            "Lacquered",
             "Gilded",
             "Dragonscale"
         ],
         "metal": [
+            "Bronze",
             "Iron",
+            "Polished",
             "Steel",
             "Engraved",
+            "Chased",
             "Mithril",
             "Adamantine"
         ]

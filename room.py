@@ -11,6 +11,7 @@ class Room:
         self.hasContents = False
         self.monster = None
         self.trap = None
+        self.stairs = ""
         if data:
             for k in data:
                 setattr(self, k, data[k])
@@ -22,11 +23,14 @@ class Room:
             self.generateName()
             self.hasContents = self.known
 
-    def generateContents(self, level):
+    def generateContents(self, dungeonLevel, floor = -1):
         if not self.hasContents:
             self.hasContents = True
             self.known = True
-            self.monster = Monster(level)
+            if floor > -1: # boss monster
+                self.monster = Monster(dungeonLevel - 1, { "floor": floor, "id": -1 })
+            else:
+                self.monster = Monster(dungeonLevel - 1)
 
     def generateName(self):
         descriptors = []
@@ -43,7 +47,7 @@ class Room:
         doors = []
         stairs = ""
         for exitDir, exitObj in exits:
-            if exitObj.exists:
+            if exitObj.isValid():
                 if exitDir == "n":
                     doors.append("North")
                 if exitDir == "s":

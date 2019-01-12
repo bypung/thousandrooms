@@ -33,6 +33,7 @@ class Player(Creature):
             "history": {
                 "rest": 0,
                 "risky_win": 0,
+                "reckless": 0,
                 "run_away": 0,
                 "kills": 0,
                 "buy_item": 0,
@@ -40,7 +41,8 @@ class Player(Creature):
                 "dmg_done": 0,
                 "dmg_taken": 0,
                 "epitaph": "Still exploring..."
-            }
+            },
+            "monsterLore": {}
         }
         Creature.__init__(self, info)
 
@@ -53,7 +55,7 @@ class Player(Creature):
         self.gp += value
         
     def removeGold(self, value):
-        self.xp += value
+        self.gp -= value
 
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
@@ -123,6 +125,7 @@ class Player(Creature):
         return random.choice(verbs)
         
     def incrementHistory(self, field, value = 1):
+
         self.history[field] += value
 
     def drain(self, value):
@@ -178,6 +181,7 @@ class Player(Creature):
             },
             {
                 "Kills": f"{self.history['kills']}",
+                "Reckless Attacks": f"{self.history['reckless']}",
                 "Risky Wins": f"{self.history['risky_win']}" 
             },
             { 

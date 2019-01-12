@@ -6,7 +6,7 @@ import item_list
 from utils import Utils
 
 class Item:
-    def __init__(self, level, data = None):
+    def __init__(self, level, data = None, force = []):
         if level > 0:
             self.level = level
             self.equipped = False
@@ -17,6 +17,8 @@ class Item:
                 setattr(self, i, data[i])
         else:
             info = self.getItem(level)
+            while len(force) > 0 and (not info or info["kind"] not in force):
+                info = self.getItem(level)
             if info != None:
                 for i in info:
                     setattr(self, i, info[i])
@@ -85,9 +87,8 @@ class Item:
         if kind in ["usable", "ring"]:
             items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level] 
         else:
-            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 5] 
-        info = random.choice(items)
-        return info
+            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 8] 
+        return random.choice(items) if len(items) else None
 
     @staticmethod
     def getOptions(source, options):

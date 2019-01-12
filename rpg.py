@@ -32,8 +32,8 @@ class Game:
         self.store = None
         self.options = {
             "start": "<L>oad, <N>ew",
-            "combat": "<A>ttack, <D>efend, <U>se Item, <R>un",
-            "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave",
+            "combat": "<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
+            "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave, <Q>uit",
             "gameOver": "<R>estart, <Q>uit",
             "inventory": lambda : Item.getOptions(self.player, self.itemListOptions) if self.player else "",
             "store": lambda : Item.getOptions(self.store, self.itemListOptions) if self.store else "",
@@ -134,7 +134,7 @@ class Game:
         self.printStatHeader()
         self.player.printStats()
         print("")
-        self.monster.printStats()
+        self.monster.printStats(self.player.monsterLore)
 
     def peaceDisplay(self):
         self.printStatHeader()
@@ -166,6 +166,9 @@ class Game:
 ### COMBAT METHODS ###
 
     def playerAttack(self):
+        if self.monster.charges > 0:
+            self.player.incrementHistory("reckless")
+
         atkRoll = self.rollDie(20) + self.player.atk
         
         monsterDefense = self.monster.ac
@@ -176,18 +179,24 @@ class Game:
             self.addResolution(f"{fore.GREEN}You {self.player.getAtkVerb()} the {self.monster.name} for {damage}")
             if damage < damRoll:
                 self.addResolution(f"{fore.MAGENTA}Your weapon is not very effective.")
+                self.addLore("resist")
             if damage > damRoll:
                 self.addResolution(f"{fore.CYAN}Your weapon is very effective.")
+                self.addLore("vulnerability")
             self.player.incrementHistory("dmg_done", damage)
         else:
             self.addResolution(f"{fore.WHITE}You miss!")
-        # self.printRoll(atkRoll, monsterDefense)
                 
     def monsterAttack(self, playerDefending):
-        if not self.monster.charged:
+        if self.monster.quotes:
+            quoteRoll = self.rollDie(3)
+            if quoteRoll == 1:
+                self.addResolution(f"{fore.LIGHT_SLATE_BLUE}{random.choice(self.monster.quotes)}")
+
+        if self.monster.charges == 0:
             chargeRoll = self.rollDie(10)
             if chargeRoll == 1:
-                self.monster.charged = True
+                self.monster.charges += self.monster.chargeRate
                 self.addResolution(f"{fore.DARK_ORANGE_3B}The {self.monster.name} readies an attack...")
                 return
 
@@ -205,10 +214,11 @@ class Game:
         else:
             self.addResolution(f"{fore.WHITE}The {self.monster.name} misses!")
 
-        if self.monster.charged:
-            self.monster.charged = False
+        while self.monster.charges > 0:
+            self.monster.charges -= 1
             specAtkRoll = self.rollDie(20) + self.monster.atk
             if atkRoll >= playerDefense:
+                self.addLore("special")
                 if self.monster.special == "drain":
                     self.player.drain(random.randint(1, self.monster.level) * 50)
                     self.addResolution(f"{fore.PALE_TURQUOISE_1}It drains your life essence!")
@@ -231,7 +241,8 @@ class Game:
                     self.player.incrementHistory("dmg_taken", damRoll)
             else:
                 self.addResolution(f"{fore.WHITE}Its special attack fails!")      
-        # self.printRoll(atkRoll, playerDefense)
+        self.playerDeathCheck()
+
 
     def getReward(self, level):
         xp = self.monster.level * 50
@@ -246,7 +257,7 @@ class Game:
                 self.incrementDungeonLevel()
             self.addResolution(f"{fore.YELLOW}You gained a level!")
 
-        item = Item(self.monster.level)
+        item = Item(self.monster.level, None, ["weapon", "armor", "ring"] if self.monster.isBoss else [])
         if item.kind:
             self.player.addItem(item)
             self.addResolution(f"{fore.YELLOW}You found: {item.displayName}")
@@ -270,11 +281,11 @@ class Game:
     def playerDeathCheck(self):
         if self.player.hp <= 0:
             self.addResolution(f"{fore.RED}{style.BOLD}You die!")
-            self.player.killedBy(self.monster, self.map.playerPosition[0])
+            self.player.killedBy(self.monster, self.map.playerPosition[0] + 1)
             self.mode = "gameOver"
 
     def playerEscape(self):
-        self.monster.charged = False
+        self.monster.charges = 0
         self.monster = None
         exits = [e for e in self.map.getCurrentDoors() if e[1].used]
         if len(exits) == 0:
@@ -284,6 +295,25 @@ class Game:
         newRoom = self.map.getCurrentRoom()
         self.monster = newRoom.monster
         self.mode = "combat" if self.monster else "peace"
+
+    def addLore(self, area = None):
+        try:
+            lore = self.player.monsterLore[self.monster.id]
+        except KeyError:
+            lore = { "resist": False, "vulnerability": False, "special": False}
+            self.player.monsterLore[self.monster.id] = lore
+            
+        if not area:
+            unknowns = [key for key, value in lore.items() if value == False]
+            if len(unknowns) == 0:
+                self.addResolution("There is nothing more for you to learn!")
+                return
+            else:
+                area = random.choice(unknowns)
+        
+        if not lore[area]:
+            lore[area] = True
+            self.addResolution(f"{fore.DEEP_PINK_3B}You gain new knowledge!")
 
 ### ITEM METHODS ###
 
@@ -528,7 +558,11 @@ class Game:
         elif action == "D":
             self.addResolution("You defend yourself!")
             self.monsterAttack(True)
-            self.playerDeathCheck()
+            self.incrementTurn()
+        elif action == "X":
+            self.addResolution("You study your opponent...")
+            self.addLore()
+            self.monsterAttack(True)
             self.incrementTurn()
         elif action == "U":
             self.mode = "inventory"
@@ -536,7 +570,7 @@ class Game:
             self.itemListOptions["filter"] = "usable"
             self.itemListOptions["mode"] = "combat"
         elif action == "R":
-            self.monster.heal(self.monster.hd * self.monster.level // 4)
+            self.monster.heal(self.monster.hd * self.monster.level // 4 - self.player.getAbilityLevel('running'))
             self.player.incrementHistory("run_away")
             self.playerEscape()
             if 'running' in self.player.abilities:
@@ -570,7 +604,7 @@ class Game:
             self.itemListOptions["mode"] = "buy"
             self.store = Store(self.level)
             self.mode = "store"
-            timeToShop = (self.map.playerPosition[0] + 1) * 10
+            timeToShop = (self.map.playerPosition[0] + 1) * (10 - self.player.getAbilityLevel('traveling'))
             self.itemListOptions["message"] = f"{style.DIM}This trip will take {timeToShop} turns..."
             self.incrementTurn(timeToShop)
         elif action == "S":
@@ -579,6 +613,8 @@ class Game:
             choice = input()
             if len(choice) > 0 and choice[0].upper() == "Q":
                 self.quit = True
+        elif action == "Q":
+            self.quit = True
         else:
             return False
         return True
@@ -587,7 +623,7 @@ class Game:
         if action == "R":
             print("restart")
             self.initialize()
-        if action == "Q":
+        elif action == "Q":
             self.quit = True
         return True
 
@@ -596,19 +632,19 @@ class Game:
             item = self.selectItem(self.player, "Which item do you wish to equip?")
             if item:
                 self.player.equipItem(item)
-        if action == "P":
+        elif action == "P":
             self.itemListOptions["currPage"] -= 1
-        if action == "N":
+        elif action == "N":
             self.itemListOptions["currPage"] += 1
-        if action == "F":
+        elif action == "F":
             self.filterItems()
-        if action == "U":
+        elif action == "U":
             item = self.selectItem(self.player, "Use which item?")
             if item:
                 used = self.resolveItem(item, self.itemListOptions["mode"])
                 if used:
                     self.player.removeItem(item)
-        if action == "C":
+        elif action == "C":
             self.mode = self.itemListOptions["mode"]
         return True
 
@@ -629,7 +665,7 @@ class Game:
                         self.player.addItem(item)
                     else:
                         self.itemListOptions["message"] = f"{fore.RED}You can't afford the {item.displayName}!"
-        if action == "S":
+        elif action == "S":
             if self.itemListOptions["mode"] == "buy":
                 self.itemListOptions["mode"] = "sell"
             else:
@@ -642,13 +678,13 @@ class Game:
                     self.player.addGold(price)
                     self.player.removeItem(item)
                     self.store.addItem(item)
-        if action == "P":
+        elif action == "P":
             self.itemListOptions["currPage"] -= 1
-        if action == "N":
+        elif action == "N":
             self.itemListOptions["currPage"] += 1
-        if action == "F":
+        elif action == "F":
             self.filterItems()
-        if action == "L":
+        elif action == "L":
             self.mode = "peace"
         return True
 

@@ -15,7 +15,7 @@ class Utils:
         return count
 
     @staticmethod
-    def printStats(data, cellWidth = 20):
+    def printStats(data, cellWidth = 25):
         for row in data:
             out = ""
             for field in row:

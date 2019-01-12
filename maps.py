@@ -82,6 +82,7 @@ class Map:
                             upStairs = copy.deepcopy(stair)
                             upStairs.stairDir = "up"
                             floor["stairs"][key] = upStairs
+                            floor["rooms"][key].stairs = "up"
                 if f < numFloors:
                     down = (random.randint(0,self.width - 1), random.randint(0,self.width - 1))
                     while down == up:
@@ -89,6 +90,7 @@ class Map:
                     downStairs = Door("stairs")
                     downStairs.stairDir = "down"
                     floor["stairs"][down] = downStairs
+                    floor["rooms"][down].stairs = "down"
 
             self.floors.append(floor)
 
@@ -140,19 +142,25 @@ class Map:
             room.hasContents = True
             room.monster = None
         if not room.hasContents:
-            room.generateContents(self.dungeonLevel)
+            self.fillRoom(room)
         
         for key, door in self.getCurrentDoors():
             door.seen = True
             if (door.exists):
                 if key == "n":
-                    self.getRoom(floor, row - 1, col).generateContents(self.dungeonLevel)
+                    self.fillRoom(self.getRoom(floor, row - 1, col))
                 if key == "s":
-                    self.getRoom(floor, row + 1, col).generateContents(self.dungeonLevel)
+                    self.fillRoom(self.getRoom(floor, row + 1, col))
                 if key == "e":
-                    self.getRoom(floor, row, col + 1).generateContents(self.dungeonLevel)
+                    self.fillRoom(self.getRoom(floor, row, col + 1))
                 if key == "w":
-                    self.getRoom(floor, row, col - 1).generateContents(self.dungeonLevel)
+                    self.fillRoom(self.getRoom(floor, row, col - 1))
+
+    def fillRoom(self, room):
+        if room.stairs == "down":
+            room.generateContents(self.dungeonLevel, self.playerPosition[0])
+        else:
+            room.generateContents(self.dungeonLevel)
 
     def printFloor(self, turn):
         floor = self.playerPosition[0]
