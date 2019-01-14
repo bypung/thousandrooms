@@ -68,16 +68,17 @@ class Room:
         if stairs:
             print(stairs)
 
-    def getMapIcon(self):
+    def getMapIcon(self, monsterList):
         out = " "
-        if self.monster and self.seen:
-            out = f"{back.RED}{fore.WHITE}{self.monster.name[0]}{style.RESET}"
+        if self.monster and self.monster.known:
+            monsterList.append(self.monster)
+            out = f"{back.DARK_RED_1}{fore.ORANGE_3}{len(monsterList)}{style.RESET}"
         return out
 
     def removeMonster(self):
         self.monster = None
 
-    def printMap(self, isCurrentRoom, stairs = ""):
+    def printMap(self, isCurrentRoom, monsterList, stairs = ""):
         out = ""
         wallColor = fore.WHITE
         if not self.known:
@@ -85,8 +86,8 @@ class Room:
         elif stairs:
             wallColor = fore.RED if stairs == "down" else fore.GREEN
         if not self.seen:
-            out += f"{style.DIM}"
-        out += f"{wallColor}[{fore.WHITE}"
-        out += "*" if isCurrentRoom else self.getMapIcon()
-        out += f"{wallColor}]{fore.WHITE}{style.RESET}"
+            wallColor = f"{style.DIM}{wallColor}"
+        out += f"{wallColor}[{style.RESET}"
+        out += f"{back.NAVY_BLUE}{style.BOLD}*{style.RESET}" if isCurrentRoom else self.getMapIcon(monsterList)
+        out += f"{wallColor}]{style.RESET}"
         return out

@@ -128,6 +128,13 @@ class Item:
         return out
 
     @staticmethod
+    def getItemPrice(item, valueFactor):
+        price = item.level * valueFactor
+        if item.kind == "usable":
+            price = price * 2
+        return price
+
+    @staticmethod
     def printInventory(source, options):
         page = options["currPage"]
         pageSize = options["pageSize"]
@@ -155,7 +162,7 @@ class Item:
                 "ATK": f"{item.atk if item.atk else '--'}",
                 "Type": f"{item.type}",
                 "AC": f"{item.ac if item.ac else '--'}",
-                "Value": f"{item.level * valueFactor}"
+                "Value": f"{Item.getItemPrice(item, valueFactor)}"
             }
             if sourceType == "Player":
                 line["_color"] = fore.GREEN if item.equipped else style.RESET

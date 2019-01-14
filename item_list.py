@@ -414,6 +414,9 @@ items = [
 descriptors = {
     "weapon": {
         "pierce": [
+            "Light",
+            "Balanced",
+            "Tapered",
             "Pointy",
             "Sharp",
             "Keen",
@@ -421,55 +424,76 @@ descriptors = {
             "Barbed",
             "Impaling",
             "Stabbing",
-            "Needle"
+            "Needle",
+            "Diamond"
         ],
         "slash": [
+            "Fine",
+            "Long",
             "Honed",
             "Jagged",
             "Razor",
             "Gleaming",
             "Serrated",
-            "Keen",
             "Tempered",
+            "Curved",
+            "Keen",
+            "Double Edged",
             "Vorpal"
         ],
         "blunt": [
+            "Polished",
             "Hardened",
             "Dense",
             "Faceted",
+            "Iron",
             "Heavy",
             "Leaden",
             "Massive",
+            "Dragonbone",
             "Crushing",
+            "Giant",
             "Unstoppable"
         ]
     },
     "armor": {
         "cloth": [
+            "Linen",
             "Thick",
             "Wool",
+            "Striped",
+            "Felted",
             "Patterned",
             "Silk",
             "Embroidered",
             "Brocade",
+            "Velvet",
             "Goldworked",
             "Mageweave"
         ],
         "leather": [
+            "Soft",
             "Deerskin",
             "Waxed",
             "Hardened",
+            "Dyed",
             "Embossed",
             "Tooled",
             "Lacquered",
+            "Rhino Hide",
             "Gilded",
+            "Trollskin",
             "Dragonscale"
         ],
         "metal": [
+            "Copper",
             "Bronze",
+            "Shiny",
             "Iron",
             "Polished",
             "Steel",
+            "Burnished",
+            "Exotic",
             "Engraved",
             "Chased",
             "Mithril",
@@ -479,14 +503,23 @@ descriptors = {
     "ring": [
         "Shiny",
         "Golden",
-        "Jeweled",
-        "Glowing",
+        "Amethyst",
+        "Agate",
+        "Lustrous"
+        "Garnet",
+        "Malachite",
+        "Hematite",
+        "Emerald",
         "Elvish",
+        "Ruby",
         "Dwarvish",
+        "Sapphire",
         "Starmetal",
+        "Glowing",
         "Quicksilver",
         "Crystal",
-        "Dragonbone"
+        "Dragonbone",
+      
     ]
 }
 

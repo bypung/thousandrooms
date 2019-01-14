@@ -13,6 +13,7 @@ class Map:
         self.width = width
         self.numFloors = numFloors
         self.dungeonLevel = 1 if not data else data["dungeonLevel"]
+        self.message = ""
 
         for f in range(numFloors):
             floor = {
@@ -136,6 +137,9 @@ class Map:
         
         room = self.getRoom(floor, row, col)
         room.seen = True
+        if room.monster:
+            room.monster.seen = True
+            room.monster.known = True
         room.known = True
 
         if startRoom:
@@ -182,6 +186,7 @@ class Map:
         mapBuffer.append(header)
 
         # print map rows
+        monsterList = []
         for r in range(self.width):
             roomRow = ""
             roomRow += f"{style.DIM}{r} {style.RESET}"
@@ -194,7 +199,7 @@ class Map:
                     stairType = stairs.stairDir
                 except KeyError:
                     pass
-                roomRow += room.printMap(isCurrentRoom, stairType)
+                roomRow += room.printMap(isCurrentRoom, monsterList, stairType)
                 if c < self.width - 1:
                     door = self.floors[floor]["doors"]["ew"][(r,c)]
                     roomRow += door.printMap()
@@ -209,6 +214,12 @@ class Map:
                         doorRow += "  "
                 mapBuffer.append(doorRow)
         
+        for i, monster in enumerate(monsterList):
+            monsterLine = f"{back.DARK_RED_1}{fore.ORANGE_3}{i + 1}{style.RESET} {monster.name}"
+            if monster.seen:
+                monsterLine += f" {style.DIM}({monster.hp}/{monster.maxHp})"
+            legendBuffer.append(monsterLine)
+
         mapLineWidth = len(mapBuffer[0])
         for b in range(max(len(mapBuffer), len(legendBuffer))):
             mapLine = " " * mapLineWidth
@@ -244,13 +255,29 @@ class Map:
                 out.append((stair.stairDir, stair))  
         return out
 
+    def getConnectedRooms(self):
+        pp = self.playerPosition
+        doors = self.getCurrentDoors()
+        out = []
+        for (direction, door) in doors:
+            if door.exists:
+                if direction == "n":
+                    out.append(self.getRoom(pp[0], pp[1] - 1, pp[2]))
+                elif direction == "s":
+                    out.append(self.getRoom(pp[0], pp[1] + 1, pp[2]))
+                elif direction == "e":
+                    out.append(self.getRoom(pp[0], pp[1], pp[2] + 1))
+                elif direction == "w":
+                    out.append(self.getRoom(pp[0], pp[1], pp[2] - 1))
+        return out
+
     def discoverStairs(self):
         pp = self.playerPosition
         floor = self.floors[pp[0]]
         for key, stair in floor["stairs"].items():
             if stair.stairDir == "down":
                 room = self.getRoom(pp[0], key[0], key[1])
-                room.generateContents(self.dungeonLevel)
+                self.fillRoom(room)
                 return
 
     def getOptions(self):
@@ -273,6 +300,7 @@ class Map:
                 if direction == "down":
                     stairs += ["<D>own"]
         options += doors + stairs + ["<L>isten", "<S>earch", "<B>ack"]
-        out += ", ".join(options)
+        out = self.message + f"{style.RESET}\n" + ", ".join(options) + style.RESET
+        self.message = ""
         return out
 

@@ -31,10 +31,10 @@ class Game:
         self.map = None
         self.store = None
         self.options = {
-            "start": "<L>oad, <N>ew",
-            "combat": "<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
-            "peace": "<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave, <Q>uit",
-            "gameOver": "<R>estart, <Q>uit",
+            "start": "\n<L>oad, <N>ew",
+            "combat": "\n<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
+            "peace": "\n<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave, <Q>uit",
+            "gameOver": "\n<R>estart, <Q>uit",
             "inventory": lambda : Item.getOptions(self.player, self.itemListOptions) if self.player else "",
             "store": lambda : Item.getOptions(self.store, self.itemListOptions) if self.store else "",
             "map": lambda : self.map.getOptions() if self.map else ""
@@ -78,8 +78,8 @@ class Game:
             "pageSize": 15,
             "filter": "all",
             "mode": "peace",
-            "sellFactor": 10,
-            "buyFactor": 40,
+            "sellFactor": 20,
+            "buyFactor": 100,
             "message": "",
             "gp": 0
         }
@@ -161,7 +161,7 @@ class Game:
         options = self.options[self.mode]
         if type(options) is LambdaType:
             options = options()
-        print(f"\n{style.BOLD}{options}")
+        print(f"{style.BOLD}{options}")
 
 ### COMBAT METHODS ###
 
@@ -233,6 +233,12 @@ class Game:
                     if len(burnables) > 0:
                         item = random.choice(burnables)
                         self.addResolution(f"{fore.CHARTREUSE_1}It burns your {item.displayName} to ash!")
+                        self.player.removeItem(item)
+                elif self.monster.special == "freeze":
+                    freezables = [item for item in self.player.items if item.name == "Potion"]
+                    if len(freezables) > 0:
+                        item = random.choice(freezables)
+                        self.addResolution(f"{fore.CHARTREUSE_1}It freezes your {item.displayName} and shatters it!")
                         self.player.removeItem(item)
                 else:
                     damRoll = self.rollDamage(self.monster)
@@ -352,6 +358,13 @@ class Game:
                     #Handle the exception
                     print("Please enter an integer")
 
+    def getItemPrice(self, item, action):
+        factor = self.itemListOptions["buyFactor" if action == "buy" else "sellFactor"]
+        price = item.level * self.itemListOptions["buyFactor"]
+        if item.kind == "usable":
+            price = price * 2
+        return price
+
     def resolveItem(self, item, mode):
         if item.kind != "usable":
             return False
@@ -394,7 +407,11 @@ class Game:
 
     def knowledgeResolve(self):
         self.map.discoverStairs()
-        self.addResolution(f"{fore.CYAN}The secrets of the dungeon become clearer...")
+        self.nextLevel -= self.level * 25
+        self.addResolution(f"{fore.CYAN}The secrets of the dungeon become clearer!")
+        self.addResolution(f"{fore.DARK_ORANGE_3B}The monsters sense your questing mind...")
+        if self.turn >= self.nextLevel:
+            self.incrementDungeonLevel()
         return True
 
     def teleportResolve(self):
@@ -533,6 +550,22 @@ class Game:
                         if monster != None:
                             self.monster = monster
                             self.mode = "combat"
+        elif action == "L":            
+            loreRating = self.player.getLoreRating(self.map.playerPosition[0])
+            rooms = self.map.getConnectedRooms()
+            success = False
+            for room in rooms:
+                if room.monster and not room.monster.known:
+                    loreRoll = self.rollDie(100)
+                    checkNum = loreRating * 3 if self.player.hasSeenMonster(room.monster) else loreRating
+                    if (loreRoll <= checkNum):
+                        success = True
+                        room.monster.known = True
+            if success:
+                self.map.message = f"{fore.GREEN}You hear something nearby!"
+            else:
+                self.map.message = f"{fore.CYAN}You listen carefully but don't hear anything new..."
+            self.incrementTurn(3)
         else:
             return False
         return True
@@ -655,7 +688,7 @@ class Game:
             else:
                 item = self.selectItem(self.store, "Which item do you wish to buy?")
                 if item:
-                    price = item.level * self.itemListOptions["buyFactor"]
+                    price = self.getItemPrice(item, "buy")
                     if price <= self.player.gp:
                         self.player.incrementHistory("buy_item")
                         self.itemListOptions["message"] = f"{fore.CYAN}You bought the {item.displayName}!"
@@ -672,7 +705,7 @@ class Game:
                 item = self.selectItem(self.player, "Which item do you wish to sell?")
                 if item:
                     self.player.incrementHistory("sell_item")
-                    price = item.level * self.itemListOptions["sellFactor"]
+                    price = self.getItemPrice(item, "sell")
                     self.itemListOptions["message"] = f"{fore.YELLOW}You sold your {item.displayName}!"
                     self.itemListOptions["currPage"] = 0
                     self.player.addGold(price)

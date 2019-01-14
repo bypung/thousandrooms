@@ -13,14 +13,21 @@ class Monster(Creature):
         self.chargeRate = 1
         self.isBoss = False
         self.quotes = None
+        self.seen = False
+        self.known = False
         isBoss = data and data["id"] < 0
         if data and not isBoss:
             for k in data:
                 setattr(self, k, data[k])
+            try:
+                test = self.displayName
+            except AttributeError:
+                self.displayName = self.name
         else:
             info = self.getMonster(data["floor"] + 1 if isBoss else genlevel)
             Creature.__init__(self, info)
             self.ac += 10
+            self.displayName = self.name
 
             if isBoss:
                 # generate boss monster
@@ -32,9 +39,9 @@ class Monster(Creature):
                 except KeyError:
                     pass
                 if descriptor[0]:
-                    self.name = f"{descriptor[0]} {self.name}"
+                    self.displayName = f"{descriptor[0]} {self.displayName}"
                 if descriptor[1]:
-                    self.name += f" {descriptor[1]}"
+                    self.displayName += f" {descriptor[1]}"
 
                 self.quotes = monster_list.bossQuotes[self.type]
                 try:
@@ -58,7 +65,7 @@ class Monster(Creature):
                         descriptor = monster_list.descriptors[self.subtype][levelDiff - 1]
                     except KeyError:
                         pass
-                    self.name = f"{descriptor} {self.name}"
+                    self.displayName = f"{descriptor} {self.displayName}"
                     self.level += levelDiff
                     self.atk += levelDiff
                     self.ac += levelDiff    
@@ -70,7 +77,7 @@ class Monster(Creature):
                                     
     def printStats(self, playerLore):
         nameColor = fore.DARK_ORANGE_3B if self.isBoss else fore.RED
-        print(f"{nameColor}{style.BOLD}{self.name} ({str(self.level)}){style.RESET}")
+        print(f"{nameColor}{style.BOLD}{self.displayName} ({str(self.level)}){style.RESET}")
         try:
             lore = playerLore[self.id]
         except KeyError:     

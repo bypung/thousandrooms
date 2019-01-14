@@ -170,6 +170,25 @@ class Player(Creature):
                 itemNames.append(item.displayName)
         print("Equipped: " + ", ".join(itemNames))
 
+    def getLoreRating(self, floor):
+        maxLore = (floor + 1) * 12
+        count = 0
+        for key, m in self.monsterLore.items():
+            if m["resist"]:
+                count += 1
+            if m["vulnerability"]:
+                count += 1
+            if m["special"]:
+                count += 1
+        return count / maxLore * 100
+
+    def hasSeenMonster(self, monster):
+        try:
+            lore = self.monsterLore[monster.id]
+            return True
+        except KeyError:
+            return False
+
     def printHistory(self):
         print(f"{fore.MAGENTA}{style.BOLD}{self.name}{style.RESET}")
         print(f"{fore.RED}{self.history['epitaph']}{style.RESET}\n")
