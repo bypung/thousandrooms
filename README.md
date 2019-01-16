@@ -39,7 +39,7 @@ Manage your equipment and other items. Some items can only be used outside of co
 Take a trip back up to the surface to buy and sell items. Every time you visit the store it will have a new selection of items appropriate to the current difficulty level of the dungeon. This trip will take 10 turns for every level you have descended in the dungeon. After you retrieve the Idol, rampaging monsters will block the path to the surface.
 
 ##### Rest
-Tale a break and bandage your wounds. Resting will heal all of your injuries, but the more you heal, the more turns you will spend resting.
+Take a break and bandage your wounds. Resting will heal all of your injuries, but the more you heal, the more turns you will spend resting.
 
 ##### Continue
 Journey deeper into the dungeon! This will open the map and allow you to choose your next destination.
