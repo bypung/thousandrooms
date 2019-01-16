@@ -22,59 +22,59 @@ Once you retrieve the Idol, all rooms will fill with monsters again, but at leas
 
 Every great legend starts somewhere. Yours starts here.
 
-##### <L>oad
+##### Load
 Load a previously saved game. There may be more than one adventurer saved, so make sure you pick the right one!
 
-##### <N>ew
+##### New
 Start a brand new adventure. You will be able to choose your hero's name.
 
 ### An Empty Room
 
 A room without a monster is a peaceful place. You can use this time to do a nummber of things:
 
-##### <I>nventory
+##### Inventory
 Manage your equipment and other items. Some items can only be used outside of combat. Examining your inventory and equipping items takes no time. Using an item takes one turn, unless otherwise specified.
 
-##### <M>erchant
+##### Merchant
 Take a trip back up to the surface to buy and sell items. Every time you visit the store it will have a new selection of items appropriate to the current difficulty level of the dungeon. This trip will take 10 turns for every level you have descended in the dungeon. After you retrieve the Idol, rampaging monsters will block the path to the surface.
 
-##### <R>est
+##### Rest
 Tale a break and bandage your wounds. Resting will heal all of your injuries, but the more you heal, the more turns you will spend resting.
 
-##### <C>ontinue
+##### Continue
 Journey deeper into the dungeon! This will open the map and allow you to choose your next destination.
 
-##### <S>ave
+##### Save
 Put a bookmark in the tale of your adventure. This will always overwrite your previous save. You will then be able to either continue your journey or quit for now.
 
-##### <Q>uit
+##### Quit
 Stop playing. Be sure to save first!
 
 ### Your Inventory
 
-##### <E>quip
+##### Equip
 You can equip one weapon, one armor, and one ring at any given time. Choose wisely! Some weapons may be more effective against certain monsters.
 
-##### <U>se
+##### Use
 Items like scrolls and potions may be used to produce magical effects. Some may not be work outside of combat.
 
-##### <F>ilter
+##### Filter
 If you have a lot of items, you can filter the list to just a certain type of item to make them easier to find.
 
-##### <N>ext, <P>revious, and <C>lose
+##### Next, Previous, and Close
 You an flip through the pages of your inventory or close it and journey onward.
 
 ### The Map
 
 The map will show you places you've been, as well as places you are aware of but haven't visited yet.
 
-##### <N>orth, <S>outh, <W>est, <E>ast, <U>p, <D>own
+##### North, South, West, East, Up, Down
 You can move in any direction where there is an available door or stair. Moving takes only one turn.
 
-##### <L>isten
+##### Listen
 After spending three turns listening, you may be able to detect unseen monsters in adjacent rooms. The more lore you have collected about monsters in the dungeon, the more likely you are to recognize the noises.
 
-##### <B>ack
+##### Back
 Close the map and return to the current room.
 
 ### Combat!
@@ -83,19 +83,19 @@ There are many fierce monsters standing between you and your goal. You don't hav
 
 Whatever action you take during combat, the monster you are facing will be able to attack you (unless your action is escaping). The monster may also prepare for a special attack the next turn, so pay attention!
 
-##### <A>ttack
+##### Attack
 Attacking the monster takes one turn. If your weapon is more or less effective than normal, you will be alerted to that fact and it will be automatically added to the lore you know about the creature.
 
-##### <D>efend
+##### Defend
 If the monster is going to use its special attack against you, you may want to spend a turn defending yourself instead. This will greatly increase your chances of not being struck by the attack. If you think you can kill the monster before it gets a chance to strike (or you think that your nromal defense is good enough) you may forego this sensible action.
 
-##### <X>amine
+##### Xamine
 You may spend a turn studying your opponent to learn its strengths and weaknesses. Each turn spent this way will five you one piece of information. The monster will still attack, so be careful!
 
-##### <U>se Item
+##### Use Item
 Some items are usable during combat, whether for attack, healing, or escape. As usual, using an item will cost you one turn.
 
-##### <R>un
+##### Run
 Often discretion is the better part of valor, especially if you realize that your current weapon is not well suited for the monster you need to defeat. Running away will cost you ten turns, and the monster will heal a quarter of its maximum health in the meantime.
 
 ## Items
