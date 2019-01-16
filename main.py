@@ -30,6 +30,7 @@ class Game:
         self.monster = None
         self.map = None
         self.store = None
+        self.saveSlot = -1
         self.options = {
             "start": "\n<L>oad, <N>ew",
             "combat": "\n<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
@@ -128,7 +129,7 @@ class Game:
 ### DISPLAY METHODS ###
 
     def startDisplay(self):
-        print(f"{style.BOLD}Welcome To The Dungeon!\n{style.RESET}")
+        print(f"{style.BOLD}Welcome To The Dungeon of 1000 Rooms!\n{style.RESET}")
 
     def combatDisplay(self):
         self.printStatHeader()
@@ -303,11 +304,12 @@ class Game:
         self.mode = "combat" if self.monster else "peace"
 
     def addLore(self, area = None):
+        id = str(self.monster.id)
         try:
-            lore = self.player.monsterLore[self.monster.id]
+            lore = self.player.monsterLore[id]
         except KeyError:
             lore = { "resist": False, "vulnerability": False, "special": False}
-            self.player.monsterLore[self.monster.id] = lore
+            self.player.monsterLore[id] = lore
             
         if not area:
             unknowns = [key for key, value in lore.items() if value == False]
@@ -572,12 +574,28 @@ class Game:
 
     def startResolve(self, action):
         if action == "L":            
-            load = self.loadSave()
+            saves = self.loadSaveFiles()
+            if saves:
+                clear()
+                self.printSaveList(saves)
+                saveFile = None
+                while not saveFile:
+                    sys.stdout.write(f"\n{style.BOLD}Choose a save file: ")
+                    saveChoice = input()
+                    try:
+                        saveIndex = int(saveChoice) - 1
+                        saveFile = saves[saveIndex]
+                        self.loadSave(saveFile)
+                        self.saveSlot = saveIndex
+                    except IndexError:
+                        print("Invalid item number")
+                    except ValueError:
+                        print("Please enter an integer")
+            else:
+                print ("No save file found, let's start a new game instead!")
+                self.startNewGame()
         elif action == "N":
-            print("Choose a name:")
-            name = input()
-            self.player = Player(name)
-            self.map = Map()
+            self.startNewGame()
         else:
             return False
         self.mode = "peace"
@@ -738,7 +756,15 @@ class Game:
         self.printResolution()
         self.takeInput()
 
+    def startNewGame(self):
+        print("Choose a name:")
+        name = input()
+        self.player = Player(name)
+        self.map = Map()
+
     def createSave(self):
+        currSaveFiles = self.loadSaveFiles()
+
         sys.stdout.write(f"{style.DIM}.")
         saveObj = {
             "player": dict(copy.deepcopy(self.player).__dict__),
@@ -798,18 +824,33 @@ class Game:
         del saveObj["map"]["floors"]
 
         # save the file
+        if self.saveSlot == -1:
+            currSaveFiles.append(saveObj)
+        else:
+            currSaveFiles[self.saveSlot] = saveObj
+
         with open('save.json', 'w') as outfile:  
-                json.dump(saveObj, outfile)
+                json.dump(currSaveFiles, outfile)
 
-    def loadSave(self):
-        with open('save.json') as json_file:  
-            load = json.load(json_file)
-            self.player = Player(load["player"]["name"], load["player"])
-            self.player.loadItems(load["items"])
-            for i in load["game"]:
-                setattr(self, i, load["game"][i])
-            self.map = Map(load["map"]["numFloors"], load["map"]["width"], load["map"])
+    def loadSaveFiles(self):
+        try:
+            with open('save.json') as json_file:  
+                return json.load(json_file)
+        except:
+            return []
 
+    def loadSave(self, load):
+        self.player = Player(load["player"]["name"], load["player"])
+        self.player.loadItems(load["items"])
+        for i in load["game"]:
+            setattr(self, i, load["game"][i])
+        self.map = Map(load["map"]["numFloors"], load["map"]["width"], load["map"])
+
+    def printSaveList(self, saveList):
+        for i, save in enumerate(saveList):
+            playerName = save["player"]["name"]
+            playerLevel = save["player"]["level"]
+            print(f"{i + 1}) {playerName} ({playerLevel})")
 
 clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
 # coloramaInit(autoreset=True)

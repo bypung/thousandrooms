@@ -142,7 +142,7 @@ class Player(Creature):
     def printStats(self):
         print(f"{fore.MAGENTA}{style.BOLD}{self.name}{style.RESET}")
 
-        hpColor = fore.WHITE
+        hpColor = style.RESET
         if self.hp / self.maxHp <= .25:
             hpColor = fore.RED
         elif self.hp / self.maxHp <= .6:

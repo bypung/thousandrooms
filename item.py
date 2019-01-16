@@ -32,6 +32,8 @@ class Item:
 
                 # improved items
                 if self.kind != "usable":
+                    if self.kind == "ring":
+                        self.level = (level + 1) // 2
                     levelDiff = level - self.level
                     if levelDiff > 0:
                         try:

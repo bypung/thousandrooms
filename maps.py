@@ -171,7 +171,7 @@ class Map:
         mapBuffer = []
         legendBuffer = [
             f"{fore.CYAN}{style.BOLD}Legend:{style.RESET}", 
-            f"{fore.GREEN}[ ]{fore.WHITE} / {fore.RED}[ ]{style.RESET} : Stairs Up/Down"
+            f"{fore.GREEN}[ ]{style.RESET} / {fore.RED}[ ]{style.RESET} : Stairs Up/Down"
         ]
 
         ppSlug = f"[{self.playerPosition[1]},{self.playerPosition[2]}]"

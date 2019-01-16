@@ -23,7 +23,7 @@ class Door:
         return True if self.type == "stairs" else self.exists
 
     def printMap(self):
-        out = Fore.WHITE if self.exists and self.seen else Fore.BLACK
-        out += "==" if self.type == "ew" else " | "
-        out += Fore.RESET
-        return out
+        if self.exists and self.seen:
+            return "==" if self.type == "ew" else " | "
+        else:
+            return "  " if self.type == "ew" else "   "

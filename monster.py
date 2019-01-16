@@ -79,7 +79,7 @@ class Monster(Creature):
         nameColor = fore.DARK_ORANGE_3B if self.isBoss else fore.RED
         print(f"{nameColor}{style.BOLD}{self.displayName} ({str(self.level)}){style.RESET}")
         try:
-            lore = playerLore[self.id]
+            lore = playerLore[str(self.id)]
         except KeyError:     
             lore = { "resist": False, "vulnerability": False, "special": False}
 

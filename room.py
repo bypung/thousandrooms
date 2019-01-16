@@ -78,16 +78,25 @@ class Room:
     def removeMonster(self):
         self.monster = None
 
+    def printWall(self, side, stairs):
+        if self.known:
+            glyph = '[' if side == "left" else ']'
+        else:
+            glyph = ' '
+        
+        wallColor = style.RESET
+        wallStyle = ""
+        if stairs:
+            wallColor = fore.RED if stairs == "down" else fore.GREEN
+            wallStyle = style.BOLD
+        if not self.seen:
+            wallStyle = style.DIM
+
+        return f"{wallColor}{wallStyle}{glyph}{style.RESET}"
+
     def printMap(self, isCurrentRoom, monsterList, stairs = ""):
         out = ""
-        wallColor = fore.WHITE
-        if not self.known:
-            wallColor = fore.BLACK
-        elif stairs:
-            wallColor = fore.RED if stairs == "down" else fore.GREEN
-        if not self.seen:
-            wallColor = f"{style.DIM}{wallColor}"
-        out += f"{wallColor}[{style.RESET}"
-        out += f"{back.NAVY_BLUE}{style.BOLD}*{style.RESET}" if isCurrentRoom else self.getMapIcon(monsterList)
-        out += f"{wallColor}]{style.RESET}"
+        out += self.printWall("left", stairs)
+        out += f"{fore.WHITE}{back.BLUE}{style.BOLD}*{style.RESET}" if isCurrentRoom else self.getMapIcon(monsterList)
+        out += self.printWall("right", stairs)
         return out
