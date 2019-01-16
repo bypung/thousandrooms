@@ -1,1 +1,0 @@
-name = "thousand_rooms"

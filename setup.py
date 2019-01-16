@@ -4,14 +4,14 @@ with open("README.md", "r") as fh:
     long_description = fh.read()
 
 setuptools.setup(
-    name="thousand_rooms",
+    name="thousand-rooms",
     version="0.0.1",
     author="Ben Pung",
     author_email="ben@houseofpung.net",
     description="A simple roguelike RPG",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/bypung/thousand_rooms",
+    url="https://github.com/bypung/thousand-rooms",
     packages=setuptools.find_packages(),
     classifiers=[
         "Programming Language :: Python :: 3",

@@ -7,8 +7,10 @@ This is a simple Rogue-like RPG written as an exercise in teaching myself Python
 The easiest way to install is using pip:
 
 ```
-pip install thousand_rooms
+pip install thousand-rooms
 ```
+
+The game was designed for a 80 x 24 terminal, with white text on a black background (and vice versa). Other sizes and default colors may be suboptimal.
 
 ## The Game
 
