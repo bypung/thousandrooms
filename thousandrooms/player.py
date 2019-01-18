@@ -2,10 +2,10 @@ import random
 
 from colored import fore, back, style
 
-from creature import Creature
-from item import Item
-from utils import Utils
-import item_list
+from .creature import Creature
+from .item import Item
+from .utils import Utils
+from .item_list import ItemList
 
 class Player(Creature):
     def __init__(self, name, saveInfo = None):
@@ -121,7 +121,7 @@ class Player(Creature):
         return level
 
     def getAtkVerb(self):
-        verbs = item_list.atkVerb[self.atkType]
+        verbs = ItemList.atkVerb[self.atkType]
         return random.choice(verbs)
         
     def incrementHistory(self, field, value = 1):

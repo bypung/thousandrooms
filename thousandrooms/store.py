@@ -1,8 +1,7 @@
 import random
 
-from item import Item
-from utils import Utils
-import item_list
+from .item import Item
+from .utils import Utils
 
 class Store:
     def __init__(self, level):

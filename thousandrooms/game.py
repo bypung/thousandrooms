@@ -8,16 +8,20 @@ from types import *
 
 from colored import fore, back, style
 
-from monster import Monster
-from item import Item
-from player import Player
-from room import Room
-from maps import Map
-from door import Door
-from store import Store
-from utils import Utils
+from .monster import Monster
+from .item import Item
+from .player import Player
+from .room import Room
+from .maps import Map
+from .door import Door
+from .store import Store
+from .utils import Utils
+
+clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
 
 class Game:
+    saveFilePath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "save.json")
+
     def __init__(self):
         self.initialize()
         
@@ -829,12 +833,12 @@ class Game:
         else:
             currSaveFiles[self.saveSlot] = saveObj
 
-        with open('save.json', 'w') as outfile:  
+        with open(self.saveFilePath, 'w') as outfile:  
                 json.dump(currSaveFiles, outfile)
 
     def loadSaveFiles(self):
         try:
-            with open('save.json') as json_file:  
+            with open(self.saveFilePath) as json_file:  
                 return json.load(json_file)
         except:
             return []
@@ -851,10 +855,3 @@ class Game:
             playerName = save["player"]["name"]
             playerLevel = save["player"]["level"]
             print(f"{i + 1}) {playerName} ({playerLevel})")
-
-clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
-# coloramaInit(autoreset=True)
-game = Game()
-while not game.quit:
-    game.nextTurn()
-clear()

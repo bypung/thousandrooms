@@ -4,8 +4,8 @@ import sys
 
 from colored import fore, back, style
 
-from room import Room
-from door import Door
+from .room import Room
+from .door import Door
 
 class Map:
     def __init__(self, numFloors = 10, width = 10, data = None):

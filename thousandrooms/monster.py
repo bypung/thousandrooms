@@ -2,9 +2,9 @@ import random
 
 from colored import fore, back, style
 
-import monster_list
-from creature import Creature
-from utils import Utils
+from .monster_list import MonsterList
+from .creature import Creature
+from .utils import Utils
 
 class Monster(Creature):
     def __init__(self, dungeonLevel, data = None):
@@ -33,9 +33,9 @@ class Monster(Creature):
                 # generate boss monster
                 self.isBoss = True
 
-                descriptor = random.choice(monster_list.bossDescriptors[self.type])
+                descriptor = random.choice(MonsterList.bossDescriptors[self.type])
                 try:
-                    descriptor = random.choice(monster_list.bossDescriptors[self.subtype])
+                    descriptor = random.choice(MonsterList.bossDescriptors[self.subtype])
                 except KeyError:
                     pass
                 if descriptor[0]:
@@ -43,9 +43,9 @@ class Monster(Creature):
                 if descriptor[1]:
                     self.displayName += f" {descriptor[1]}"
 
-                self.quotes = monster_list.bossQuotes[self.type]
+                self.quotes = MonsterList.bossQuotes[self.type]
                 try:
-                    self.quotes = monster_list.bossQuotes[self.subtype]
+                    self.quotes = MonsterList.bossQuotes[self.subtype]
                 except KeyError:
                     pass
 
@@ -60,9 +60,9 @@ class Monster(Creature):
                 # improved monsters
                 levelDiff = dungeonLevel - self.level
                 if levelDiff > 0:
-                    descriptor = monster_list.descriptors[self.type][levelDiff - 1]
+                    descriptor = MonsterList.descriptors[self.type][levelDiff - 1]
                     try:
-                        descriptor = monster_list.descriptors[self.subtype][levelDiff - 1]
+                        descriptor = MonsterList.descriptors[self.subtype][levelDiff - 1]
                     except KeyError:
                         pass
                     self.displayName = f"{descriptor} {self.displayName}"
@@ -103,12 +103,12 @@ class Monster(Creature):
         Utils.printStats(stats)
 
     def getAtkVerb(self):
-        verbs = monster_list.atkVerbs[self.type][self.atk_type]
+        verbs = MonsterList.atkVerbs[self.type][self.atk_type]
         return random.choice(verbs)
 
     @staticmethod
     def getMonster(level):
-        monsters = [monster for monster in monster_list.monsters if monster["level"] <= level and monster["level"] > level - 5] 
+        monsters = [monster for monster in MonsterList.monsters if monster["level"] <= level and monster["level"] > level - 5] 
         info = random.choice(monsters)
         return info
 

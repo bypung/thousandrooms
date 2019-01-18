@@ -1,8 +1,8 @@
 import random
 from colored import fore, back, style
 
-from monster import Monster
-import room_list
+from .monster import Monster
+from .room_list import RoomList
 
 class Room:
     def __init__(self, location, data = None, monsterData = None):
@@ -34,11 +34,11 @@ class Room:
 
     def generateName(self):
         descriptors = []
-        descriptorKeys = random.sample(room_list.descriptor_types, random.randint(1, 2))
+        descriptorKeys = random.sample(RoomList.descriptor_types, random.randint(1, 2))
 
-        for key in room_list.descriptor_types:
+        for key in RoomList.descriptor_types:
             if key in descriptorKeys:
-                descriptors.append(random.choice(room_list.descriptors[key]))
+                descriptors.append(random.choice(RoomList.descriptors[key]))
 
         self.name = f"{fore.CYAN}A {' '.join(descriptors)} room"
 

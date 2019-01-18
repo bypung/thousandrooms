@@ -1,5 +1,6 @@
 from colored import fore, back, style
-from utils import Utils
+
+from .utils import Utils
 
 class Creature:
     def __init__(self, info):

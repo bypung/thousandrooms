@@ -2,8 +2,8 @@ import random
 
 from colored import fore, back, style
 
-import item_list
-from utils import Utils
+from .item_list import ItemList
+from .utils import Utils
 
 class Item:
     def __init__(self, level, data = None, force = []):
@@ -37,11 +37,11 @@ class Item:
                     levelDiff = level - self.level
                     if levelDiff > 0:
                         try:
-                            descriptor = item_list.descriptors[self.kind][levelDiff - 1]
+                            descriptor = ItemList.descriptors[self.kind][levelDiff - 1]
                         except KeyError:
                             pass
                         try:
-                            descriptor = item_list.descriptors[self.kind][self.type][levelDiff - 1]
+                            descriptor = ItemList.descriptors[self.kind][self.type][levelDiff - 1]
                         except KeyError:
                             pass
                         except TypeError:
@@ -60,10 +60,10 @@ class Item:
 
     def generateEgo(self):
         if self.kind == "weapon":
-            ego = random.choice(item_list.weaponEgo)
+            ego = random.choice(ItemList.weaponEgo)
             self.atk += ego["bonus"]
         else:
-            ego = random.choice(item_list.armorEgo)
+            ego = random.choice(ItemList.armorEgo)
             self.ac += ego["bonus"]
 
         self.displayName += f" of {ego['name']}"
@@ -87,9 +87,9 @@ class Item:
             kind = "ring"
     
         if kind in ["usable", "ring"]:
-            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level] 
+            items = [item for item in ItemList.items if item["kind"] == kind and item["level"] <= level] 
         else:
-            items = [item for item in item_list.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 8] 
+            items = [item for item in ItemList.items if item["kind"] == kind and item["level"] <= level and item["level"] > level - 8] 
         return random.choice(items) if len(items) else None
 
     @staticmethod
