@@ -10,12 +10,12 @@ class Creature:
         self.calculateDam()
 
     def calculateDam(self):
-        return f"{style.DIM}({self.atk + (self.level * 2)}){style.RESET}"
+        return f"{style.DIM}({self.atk + 2}-{self.atk + (self.level * 2)}){style.RESET}"
 
     def damage(self, value, type):
         damage = value
         try:
-            if self.resist == type:
+            if type in self.resist:
                 damage = value // 2
         except KeyError:
             pass

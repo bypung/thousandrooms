@@ -1,4 +1,5 @@
 import random
+import copy
 
 from colored import fore, back, style
 
@@ -16,6 +17,12 @@ class Player(Creature):
         self.history = {}
         self.name = name
         self.nextLevel = 100
+        self.skills = []
+        self.innateAbilities = {}
+        self.abilities = {}
+        self.conditions = {}
+        self.resist = []
+        self.hasIdol = False
         
         info = saveInfo if saveInfo else {
             "name": name,
@@ -83,10 +90,17 @@ class Player(Creature):
 
         self.applyItems()
         
+    def unequipItem(self, kind):
+        for invItem in self.items:
+            if invItem.kind == kind and invItem.equipped:
+                invItem.equipped = False
+        self.applyItems()
+        
     def applyItems(self):
         self.atk = 1
         self.ac = 10
-        self.abilities = []
+        self.abilities = copy.copy(self.innateAbilities)
+        self.resist = []
         self.atkType = "blunt"
 
         for item in self.items:
@@ -95,10 +109,16 @@ class Player(Creature):
                     self.atk += item.atk
                 if item.ac:
                     self.ac += item.ac
-                if item.ability:
-                    self.abilities.append(item.ability.lower())
                 if item.kind == "weapon":
                     self.atkType = item.type
+                if item.ability:
+                    if "resist_" in item.ability:
+                        self.resist.append(item.ability.replace("resist_", ""))
+                    else:
+                        try: 
+                            self.abilities[item.ability] += item.getAbilityLevel()
+                        except KeyError:
+                            self.abilities[item.ability] = item.getAbilityLevel()
 
         super().calculateDam()
 
@@ -114,10 +134,11 @@ class Player(Creature):
             return False
 
     def getAbilityLevel(self, ability):
-        items = [item for item in self.items if item.equipped and item.ability == ability]
         level = 0
-        for item in items:
-            level = max(level, item.level)  
+        try:
+            level = self.abilities[ability]
+        except KeyError:
+            pass
         return level
 
     def getAtkVerb(self):
@@ -189,12 +210,13 @@ class Player(Creature):
         except KeyError:
             return False
 
-    def printHistory(self):
+    def printHistory(self, turns):
         print(f"{fore.MAGENTA}{style.BOLD}{self.name}{style.RESET}")
         print(f"{fore.RED}{self.history['epitaph']}{style.RESET}\n")
 
         stats = [
             { 
+                "Total Turns": f"{turns}",
                 "Times Rested": f"{self.history['rest']}",
                 "Battles Fled": f"{self.history['run_away']}"
             },

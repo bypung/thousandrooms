@@ -506,7 +506,7 @@ class ItemList:
           "Golden",
           "Amethyst",
           "Agate",
-          "Lustrous"
+          "Lustrous",
           "Garnet",
           "Malachite",
           "Hematite",
@@ -603,42 +603,42 @@ class ItemList:
       "name": "Cooling",
       "bonus": 1,
       "attributes": {
-        "effect": "resist_fire"
+        "ability": "resist_fire"
       }
     },
     {
       "name": "Warmth",
       "bonus": 1,
       "attributes": {
-        "type": "resist_cold"
+        "ability": "resist_cold"
       }
     },
     {
       "name": "Alkali",
       "bonus": 1,
       "attributes": {
-        "type": "resist_acid"
+        "ability": "resist_acid"
       }
     },
     {
       "name": "Insulation",
       "bonus": 1,
       "attributes": {
-        "type": "resist_electric"
+        "ability": "resist_electric"
       }
     },
     {
       "name": "Health",
       "bonus": 0,
       "attributes": {
-        "effect": "regeneration" 
+        "ability": "regeneration" 
       }
     },
     {
       "name": "Speed",
       "bonus": 0,
       "attributes": {
-        "effect": "running" 
+        "ability": "running" 
       }
     },
     {

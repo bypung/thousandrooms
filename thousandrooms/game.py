@@ -160,7 +160,7 @@ class Game:
         self.map.printFloor(self.turn)
 
     def gameOverDisplay(self):
-        self.player.printHistory()
+        self.player.printHistory(self.turn)
 
     def printOptions(self):
         options = self.options[self.mode]
@@ -178,7 +178,7 @@ class Game:
         
         monsterDefense = self.monster.ac
             
-        if atkRoll >= monsterDefense:
+        if atkRoll == 20 or atkRoll >= monsterDefense:
             damRoll = self.rollDamage(self.player)
             damage = self.monster.damage(damRoll, self.player.atkType)
             self.addResolution(f"{fore.GREEN}You {self.player.getAtkVerb()} the {self.monster.name} for {damage}")
@@ -211,7 +211,7 @@ class Game:
         if playerDefending:
             playerDefense = playerDefense * 2 - 10
 
-        if atkRoll >= playerDefense:
+        if atkRoll == 20 or atkRoll >= playerDefense:
             damRoll = self.rollDamage(self.monster)
             self.addResolution(f"{fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {style.BOLD}{damRoll}")
             self.player.damage(damRoll, self.monster.atk_type)
@@ -228,23 +228,38 @@ class Game:
                     self.player.drain(random.randint(1, self.monster.level) * 50)
                     self.addResolution(f"{fore.PALE_TURQUOISE_1}It drains your life essence!")
                 elif self.monster.special == "melt":
-                    meltables = [item for item in self.player.items if item.kind == "weapon" or item.type == "metal"]
-                    if len(meltables) > 0:
-                        item = random.choice(meltables)
-                        self.addResolution(f"{fore.CHARTREUSE_1}It melts your {item.displayName} with acid!")
-                        self.player.removeItem(item)
+                    if "acid" in self.player.resist:
+                        self.addResolution(f"{fore.GREEN}You resist the spray of acid!")
+                    else:
+                        meltables = [item for item in self.player.items if item.kind == "weapon" or item.type == "metal"]
+                        if len(meltables) > 0:
+                            item = random.choice(meltables)
+                            self.addResolution(f"{fore.CHARTREUSE_1}It melts your {item.displayName} with acid!")
+                            self.player.removeItem(item)
                 elif self.monster.special == "burn":
-                    burnables = [item for item in self.player.items if item.name == "Scroll" or item.type in ["cloth", "leather"]]
-                    if len(burnables) > 0:
-                        item = random.choice(burnables)
-                        self.addResolution(f"{fore.CHARTREUSE_1}It burns your {item.displayName} to ash!")
-                        self.player.removeItem(item)
+                    if "fire" in self.player.resist:
+                        self.addResolution(f"{fore.GREEN}You resist the burst of flame!")
+                    else:
+                        burnables = [item for item in self.player.items if item.name == "Scroll" or item.type in ["cloth", "leather"]]
+                        if len(burnables) > 0:
+                            item = random.choice(burnables)
+                            self.addResolution(f"{fore.CHARTREUSE_1}It burns your {item.displayName} to ash!")
+                            self.player.removeItem(item)
                 elif self.monster.special == "freeze":
-                    freezables = [item for item in self.player.items if item.name == "Potion"]
-                    if len(freezables) > 0:
-                        item = random.choice(freezables)
-                        self.addResolution(f"{fore.CHARTREUSE_1}It freezes your {item.displayName} and shatters it!")
-                        self.player.removeItem(item)
+                    if "cold" in self.player.resist:
+                        self.addResolution(f"{fore.GREEN}You resist the blast of frost!")
+                    else:
+                        freezables = [item for item in self.player.items if item.name == "Potion"]
+                        if len(freezables) > 0:
+                            item = random.choice(freezables)
+                            self.addResolution(f"{fore.CHARTREUSE_1}It freezes your {item.displayName} and shatters it!")
+                            self.player.removeItem(item)
+                elif self.monster.special == "shock":
+                    if "electric" in self.player.resist:
+                        self.addResolution(f"{fore.GREEN}You resist the bolt of lightning!")
+                    else:
+                        self.addResolution(f"{fore.CHARTREUSE_1}It shocks you and makes you drop your weapon!")
+                        self.player.unequipItem("weapon")
                 else:
                     damRoll = self.rollDamage(self.monster)
                     self.addResolution(f"{fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {style.BOLD}{damRoll}")
@@ -254,24 +269,25 @@ class Game:
                 self.addResolution(f"{fore.WHITE}Its special attack fails!")      
         self.playerDeathCheck()
 
-
     def getReward(self, level):
         xp = self.monster.level * 50
         gp = self.monster.level * self.rollDie(10)
         self.player.xp += xp
         self.player.gp += gp
         self.addResolution(f"\n{fore.YELLOW}You got {xp} XP and {gp} GP")
+        self.checkPlayerLevelUp()
         
+        item = Item(self.monster.level, None, ["weapon", "armor", "ring"] if self.monster.isBoss else [])
+        if item.kind:
+            self.player.addItem(item)
+            self.addResolution(f"{fore.YELLOW}You found: {item.displayName}")
+
+    def checkPlayerLevelUp(self):
         levelUp = self.player.checkLevelUp()
         if levelUp:
             if self.level < self.player.level:
                 self.incrementDungeonLevel()
             self.addResolution(f"{fore.YELLOW}You gained a level!")
-
-        item = Item(self.monster.level, None, ["weapon", "armor", "ring"] if self.monster.isBoss else [])
-        if item.kind:
-            self.player.addItem(item)
-            self.addResolution(f"{fore.YELLOW}You found: {item.displayName}")
 
     def monsterDeathCheck(self):
         if not self.monster:
@@ -315,6 +331,7 @@ class Game:
             lore = { "resist": False, "vulnerability": False, "special": False}
             self.player.monsterLore[id] = lore
             
+        learned = False
         if not area:
             unknowns = [key for key, value in lore.items() if value == False]
             if len(unknowns) == 0:
@@ -322,10 +339,19 @@ class Game:
                 return
             else:
                 area = random.choice(unknowns)
+                learned = True
         
         if not lore[area]:
+            learned = True
             lore[area] = True
             self.addResolution(f"{fore.DEEP_PINK_3B}You gain new knowledge!")
+
+        if learned:
+            if lore["resist"] and lore["vulnerability"] and lore["special"]:
+                xp = self.monster.level * 50
+                self.player.xp += xp
+                self.addResolution(f"{fore.YELLOW}You gained {xp} XP for mastering your knowledge of this creature!")        
+                self.checkPlayerLevelUp()
 
 ### ITEM METHODS ###
 
@@ -448,6 +474,13 @@ class Game:
             }
             teleport[choice]()
             self.addResolution(f"{fore.CYAN}You are magically transported!")
+            newRoom = self.map.getCurrentRoom()
+            newRoom.generateContents(self.level)
+            self.monster = newRoom.monster
+            if self.monster:
+                self.mode = "combat"
+            else:
+                self.mode = "peace"
             return True
         else: 
             return False
@@ -530,7 +563,7 @@ class Game:
 ### RESOLUTION METHODS ###
 
     def mapResolve(self, action):
-        if action == "B":
+        if action == "B" or action == "":
             self.mode = "peace"
         elif action in ["N", "S", "E", "W", "U", "D"]:
             direction = action.lower()
@@ -541,8 +574,15 @@ class Game:
                         choice = input()
                         if choice.lower() == "y":
                             self.mode = "gameOver"
-                            self.player.setEpitaph("Escaped the dungeon!")
+                            epitaph = "Defeated the dungeon!" if self.player.hasIdol else "Fled the dungeon!"
+                            self.player.setEpitaph(epitaph)
                             return True
+                    elif direction == "d" and self.map.playerPosition[0] == self.map.numFloors - 1:
+                        self.addResolution(f"{fore.YELLOW}{style.BOLD}You found the Idol of Onekrum!")
+                        self.player.hasIdol = True
+                        self.addResolution(f"{fore.RED}{style.BOLD}Enraged monsters fill the dungeon...")
+                        self.map.resetRooms()
+                        return True
                     else:
                         self.map.movePlayer(direction)
                         door.useDoor()
@@ -625,7 +665,7 @@ class Game:
             self.itemListOptions["filter"] = "usable"
             self.itemListOptions["mode"] = "combat"
         elif action == "R":
-            self.monster.heal(self.monster.hd * self.monster.level // 4 - self.player.getAbilityLevel('running'))
+            self.monster.heal(math.floor(self.monster.hd * self.monster.level / (4 + self.player.getAbilityLevel('running') * .075)))
             self.player.incrementHistory("run_away")
             self.playerEscape()
             if 'running' in self.player.abilities:
@@ -645,7 +685,7 @@ class Game:
             self.addResolution("You take some time to recover...")
             restFactor = math.sqrt(self.player.level)
             if 'regeneration' in self.player.abilities:
-                restFactor -= 0.2 * self.player.getAbilityLevel('regeneration')
+                restFactor -= 0.075 * self.player.getAbilityLevel('regeneration')
                 self.addResolution(f"{fore.GREEN}You heal quickly...")
             timeToRest = math.floor((self.player.maxHp - self.player.hp) * restFactor)
             self.player.heal()
@@ -655,6 +695,9 @@ class Game:
             self.inititemListOptions()
             self.mode = "inventory"
         elif action == "M":
+            if self.player.hasIdol:
+                self.addResolution(f"{fore.RED}It's too dangerous to go to the store!")
+                return True
             self.inititemListOptions()
             self.itemListOptions["mode"] = "buy"
             self.store = Store(self.level)
@@ -699,7 +742,7 @@ class Game:
                 used = self.resolveItem(item, self.itemListOptions["mode"])
                 if used:
                     self.player.removeItem(item)
-        elif action == "C":
+        elif action == "C" or action == "":
             self.mode = self.itemListOptions["mode"]
         return True
 
@@ -752,7 +795,7 @@ class Game:
         action = input()
         if len(action) > 0:
             action = action[0].upper()
-            self.resolver[self.mode](action)
+        self.resolver[self.mode](action)
         
     def nextTurn(self):
         clear()

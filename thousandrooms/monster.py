@@ -24,8 +24,10 @@ class Monster(Creature):
             except AttributeError:
                 self.displayName = self.name
         else:
-            info = self.getMonster(data["floor"] + 1 if isBoss else genlevel)
+            monsterLevel = data["floor"] + 1 if isBoss else genlevel
+            info = self.getMonster(monsterLevel)
             Creature.__init__(self, info)
+            self.level = monsterLevel
             self.ac += 10
             self.displayName = self.name
 
@@ -60,20 +62,21 @@ class Monster(Creature):
                 # improved monsters
                 levelDiff = dungeonLevel - self.level
                 if levelDiff > 0:
-                    descriptor = MonsterList.descriptors[self.type][levelDiff - 1]
+                    descriptor = MonsterList.descriptors[self.type][levelDiff // 2]
                     try:
-                        descriptor = MonsterList.descriptors[self.subtype][levelDiff - 1]
+                        descriptor = MonsterList.descriptors[self.subtype][levelDiff // 2]
                     except KeyError:
                         pass
                     self.displayName = f"{descriptor} {self.displayName}"
                     self.level += levelDiff
-                    self.atk += levelDiff
-                    self.ac += levelDiff    
+                    self.atk += 2 * levelDiff
+                    self.ac += 2 * levelDiff    
+                    self.hd += levelDiff    
 
                 self.maxHp = self.hd * self.level
                 self.hp = 0
                 for x in range(self.level):
-                    self.hp += random.randint(1, self.hd)
+                    self.hp += random.randint(self.hd // 2, self.hd)
                                     
     def printStats(self, playerLore):
         nameColor = fore.DARK_ORANGE_3B if self.isBoss else fore.RED
@@ -103,12 +106,20 @@ class Monster(Creature):
         Utils.printStats(stats)
 
     def getAtkVerb(self):
-        verbs = MonsterList.atkVerbs[self.type][self.atk_type]
+        verbs = MonsterList.atkVerbs[self.atk_type]
+        try:
+            verbs = MonsterList.atkVerbs[self.type][self.atk_type]
+        except KeyError:
+            pass
+        try:
+            verbs = MonsterList.atkVerbs[self.subtype][self.atk_type]
+        except KeyError:
+            pass
         return random.choice(verbs)
 
     @staticmethod
     def getMonster(level):
-        monsters = [monster for monster in MonsterList.monsters if monster["level"] <= level and monster["level"] > level - 5] 
+        monsters = [monster for monster in MonsterList.monsters if monster["level"] <= level and monster["level"] > level - 10] 
         info = random.choice(monsters)
         return info
 

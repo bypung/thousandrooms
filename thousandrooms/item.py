@@ -7,10 +7,12 @@ from .utils import Utils
 
 class Item:
     def __init__(self, level, data = None, force = []):
+        self.isEgo = False
+        self.equipped = False
+        self.kind = ''
+
         if level > 0:
             self.level = level
-            self.equipped = False
-            self.kind = ''
         
         if data:
             for i in data:
@@ -18,15 +20,15 @@ class Item:
         else:
             info = self.getItem(level)
             while len(force) > 0 and (not info or info["kind"] not in force):
-                info = self.getItem(level)
+                info = self.getItem(level // 2)
             if info != None:
                 for i in info:
                     setattr(self, i, info[i])
                 
-                if self.ability:
-                    self.displayName = f"{self.name} of {self.ability.title()}"
-                elif self.effect:
+                if self.effect:
                     self.displayName = f"{self.name} of {self.effect.title()}"
+                elif self.ability:
+                    self.displayName = f"{self.name} of {self.ability.title()}"
                 else:
                     self.displayName = self.name
 
@@ -37,11 +39,11 @@ class Item:
                     levelDiff = level - self.level
                     if levelDiff > 0:
                         try:
-                            descriptor = ItemList.descriptors[self.kind][levelDiff - 1]
+                            descriptor = ItemList.descriptors[self.kind][levelDiff // 2]
                         except KeyError:
                             pass
                         try:
-                            descriptor = ItemList.descriptors[self.kind][self.type][levelDiff - 1]
+                            descriptor = ItemList.descriptors[self.kind][self.type][levelDiff // 2]
                         except KeyError:
                             pass
                         except TypeError:
@@ -49,9 +51,9 @@ class Item:
                         self.displayName = f"{descriptor} {self.displayName}"
                         self.level += levelDiff
                         if self.atk:
-                            self.atk += levelDiff
+                            self.atk += levelDiff // 2
                         if self.ac:
-                            self.ac += levelDiff
+                            self.ac += levelDiff // 2
 
                 if self.kind in ["weapon", "armor"]:
                     egoChance = random.randint(1,100)
@@ -59,6 +61,8 @@ class Item:
                         self.generateEgo()
 
     def generateEgo(self):
+        self.isEgo = True
+
         if self.kind == "weapon":
             ego = random.choice(ItemList.weaponEgo)
             self.atk += ego["bonus"]
@@ -69,6 +73,13 @@ class Item:
         self.displayName += f" of {ego['name']}"
         for key in ego["attributes"]:
             setattr(self, key, ego["attributes"][key])
+
+    def getAbilityLevel(self):
+
+        if self.ability:
+            return (self.level + 1) // 2
+        else:
+            return 0
 
     @staticmethod
     def getItem(level):
@@ -134,7 +145,38 @@ class Item:
         price = item.level * valueFactor
         if item.kind == "usable":
             price = price * 2
+        if item.isEgo:
+            price = price * 3
         return price
+
+    @staticmethod
+    def getItemBonus(item):
+        out = ""
+        if item.atk:
+            out += f"{item.atk}"
+        if item.ac:
+            out += f"{item.ac}"
+        if item.ability and not "resist_" in item.ability:
+            ability = item.getAbilityLevel()
+            out += f"{ability}" if out == "" else f"({ability})"
+        return out
+
+    @staticmethod
+    def getItemAbility(item):
+        out = ""
+        abbreviations = {
+            "regeneration": "regen",
+            "resist_fire": "res. fire",
+            "resist_cold": "res. cold",
+            "resist_acid": "res. acid",
+            "resist_electric": "res. electric"
+        }
+        if item.ability:
+            try:
+                out += abbreviations[item.ability]
+            except KeyError:
+                out += item.ability
+        return out
 
     @staticmethod
     def printInventory(source, options):
@@ -161,9 +203,9 @@ class Item:
         for i, item in enumerate(pageItems, 1):
             line = {
                 "Name": f"{startIndex + i}) {item.displayName}",
-                "ATK": f"{item.atk if item.atk else '--'}",
+                "Bonus": item.getItemBonus(item),
                 "Type": f"{item.type}",
-                "AC": f"{item.ac if item.ac else '--'}",
+                "Ability": item.getItemAbility(item),
                 "Value": f"{Item.getItemPrice(item, valueFactor)}"
             }
             if sourceType == "Player":
@@ -171,7 +213,7 @@ class Item:
 
             itemLines.append(line)
 
-        Utils.printTable(["   Name", "ATK", "Type", "AC", "Value"], itemLines, [40, 8, 12, 8, 8])
+        Utils.printTable(["   Name", "Bonus", "Type", "Ability", "Value"], itemLines, [40, 7, 8, 12, 8])
 
     @staticmethod
     def getFilteredItem(source, options, index):

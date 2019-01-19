@@ -160,6 +160,19 @@ class Map:
                 if key == "w":
                     self.fillRoom(self.getRoom(floor, row, col - 1))
 
+    def resetRooms(self):
+        for f in range(self.numFloors):
+            floor = self.floors[f]
+            for r in range(self.width):
+                for c in range(self.width):
+                    room = floor["rooms"][(r,c)]
+                    room.hasContents = False
+                    room.monster = None
+        pp = self.playerPosition
+        lastRoom = self.getRoom(pp[0], pp[1], pp[2])
+        lastRoom.hasContents = True
+        self.setPlayerPosition(pp[0], pp[1], pp[2])
+
     def fillRoom(self, room):
         if room.stairs == "down":
             room.generateContents(self.dungeonLevel, self.playerPosition[0])
