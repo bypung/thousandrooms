@@ -5,7 +5,6 @@ import json
 import copy
 import sys
 import time
-import threading
 from types import *
 
 import dill as pickle
@@ -788,9 +787,6 @@ class Game:
             os.makedirs(self.saveFilePath)
 
     def saveWorker(self, saveObj):
-        ## PICKLE METHOD ##
-        # saveFile = open(os.path.join(self.saveFilePath, self.player.saveId), 'wb')  
-        # pickle.dump(self, saveFile)
         saveFile = open(os.path.join(self.saveFilePath, self.player.saveId), 'w')
         json.dump(saveObj, saveFile)
 
@@ -814,62 +810,10 @@ class Game:
             }
         }
 
-        # make player items serializable
-        sys.stdout.write(fore.BLUE)
-        saveObj["items"] = []
-        for item in saveObj["player"]["items"]:
-            sys.stdout.write(".")
-            saveObj["items"].append(item.__dict__)
-        del saveObj["player"]["items"]
-
-        # make map rooms serializable
-        saveObj["map"]["rooms"] = {}
-        saveObj["map"]["monsters"] = {}
-        saveObj["map"]["doors"] = {
-            "ns": {},
-            "ew": {}
-        }
-        saveObj["map"]["stairs"] = {}
-
-        sys.stdout.write(fore.GREEN)
-        for f, floor in enumerate(saveObj["map"]["floors"]):
-            sys.stdout.write(".")
-            for r in range(self.map.width):
-                for c in range(self.map.width):
-                    saveKey = f"{f}-{r}-{c}"
-                    roomDict = floor["rooms"][(r,c)].__dict__
-                    monster = roomDict["monster"]
-                    saveObj["map"]["monsters"][saveKey] = monster.__dict__ if monster != None else None
-                    del roomDict["monster"]
-                    saveObj["map"]["rooms"][saveKey] = roomDict
-                    try: 
-                        ns = floor["doors"]["ns"][(r,c)].__dict__
-                        saveObj["map"]["doors"]["ns"][saveKey] = ns
-                    except KeyError:
-                        pass
-                    try:
-                        ew = floor["doors"]["ew"][(r,c)].__dict__
-                        saveObj["map"]["doors"]["ew"][saveKey] = ew
-                    except KeyError:
-                        pass
-                    try:
-                        stairs = floor["stairs"][(r,c)].__dict__
-                        saveObj["map"]["stairs"][saveKey] = stairs
-                    except KeyError:
-                        pass
-
-        sys.stdout.write(f"\n{style.RESET}")
-        del saveObj["map"]["floors"]
+    def createSave(self):
+        self.checkSavePath()
 
         self.saveWorker(saveObj)
-        # saveThread = threading.Thread(target=self.saveWorker, args=(saveObj,)
-        # saveThread.setDaemon(True)
-        # saveThread.start()
-
-        # while saveThread.isAlive():
-        #     time.sleep(.3)
-        #     sys.stdout.write(f"{style.MAGENTA}.")
-        # sys.stdout.write("\n")
 
         try:
             with open(self.saveListFilePath) as json_file:  
