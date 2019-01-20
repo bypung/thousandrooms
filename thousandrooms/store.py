@@ -17,7 +17,19 @@ class Store:
                 self.items += [newItem]
 
     def addItem(self, item):
-        self.items.append(item)
+        if kind == "usable":
+            found = False
+            for invItem in self.items:
+                if invItem.id == item.id:
+                    found = True
+                    invItem.stack += 1
+            if not found:
+                self.items.append(item)
+        else:
+            self.items.append(item)
 
     def removeItem(self, item):
-        self.items.remove(item)
+        if item.kind == "usable" and item.stack > 1:
+            item.stack -= 1
+        else:
+            self.items.remove(item)

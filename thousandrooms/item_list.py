@@ -1,6 +1,7 @@
 class ItemList:
   items = [
     {
+      "id": 1,
       "kind": "weapon",
       "name": "Club",
       "level": 1,
@@ -11,6 +12,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 2,
       "kind": "weapon",
       "name": "Hatchet",
       "level": 1,
@@ -21,6 +23,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 3,
       "kind": "weapon",
       "name": "Knife",
       "level": 1,
@@ -31,6 +34,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 4,
       "kind": "weapon",
       "name": "Axe",
       "level": 2,
@@ -41,6 +45,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 5,
       "kind": "weapon",
       "name": "Staff",
       "level": 2,
@@ -51,6 +56,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 6,
       "kind": "weapon",
       "name": "Dagger",
       "level": 2,
@@ -61,6 +67,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 7,
       "kind": "weapon",
       "name": "Sword",
       "level": 3,
@@ -71,6 +78,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 8,
       "kind": "weapon",
       "name": "Mace",
       "level": 3,
@@ -81,6 +89,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 9,
       "kind": "weapon",
       "name": "Spear",
       "level": 3,
@@ -91,6 +100,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 10,
       "kind": "weapon",
       "name": "Claymore",
       "level": 4,
@@ -101,6 +111,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 11,
       "kind": "weapon",
       "name": "Warhammer",
       "level": 4,
@@ -111,6 +122,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 12,
       "kind": "weapon",
       "name": "Rapier",
       "level": 4,
@@ -121,6 +133,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 13,
       "kind": "weapon",
       "name": "Flamberge",
       "level": 5,
@@ -131,6 +144,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 14,
       "kind": "weapon",
       "name": "Morningstar",
       "level": 5,
@@ -141,6 +155,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 15,
       "kind": "weapon",
       "name": "Pick",
       "level": 5,
@@ -151,6 +166,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 16,
       "kind": "weapon",
       "name": "Glaive",
       "level": 6,
@@ -161,6 +177,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 17,
       "kind": "weapon",
       "name": "Flail",
       "level": 6,
@@ -171,6 +188,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 18,
       "kind": "weapon",
       "name": "Pike",
       "level": 6,
@@ -181,6 +199,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 19,
       "kind": "weapon",
       "name": "Halberd",
       "level": 7,
@@ -191,6 +210,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 20,
       "kind": "weapon",
       "name": "Maul",
       "level": 7,
@@ -201,6 +221,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 21,
       "kind": "weapon",
       "name": "Trident",
       "level": 7,
@@ -211,6 +232,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 22,
       "kind": "armor",
       "name": "Robe",
       "level": 1,
@@ -221,6 +243,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 23,
       "kind": "armor",
       "name": "Cuirboulli",
       "level": 2,
@@ -231,6 +254,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 24,
       "kind": "armor",
       "name": "Hauberk",
       "level": 3,
@@ -241,6 +265,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 25,
       "kind": "armor",
       "name": "Jack",
       "level": 4,
@@ -251,6 +276,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 26,
       "kind": "armor",
       "name": "Brigandine",
       "level": 5,
@@ -261,6 +287,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 27,
       "kind": "armor",
       "name": "Breastplate",
       "level": 6,
@@ -271,6 +298,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 28,
       "kind": "armor",
       "name": "Cuirass",
       "level": 7,
@@ -281,6 +309,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 29,
       "kind": "ring",
       "name": "Ring of Shielding",
       "level": 3,
@@ -291,6 +320,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 30,
       "kind": "ring",
       "name": "Ring",
       "level": 2,
@@ -301,6 +331,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 31,
       "kind": "ring",
       "name": "Ring",
       "level": 3,
@@ -311,6 +342,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 32,
       "kind": "ring",
       "name": "Ring",
       "level": 4,
@@ -321,6 +353,7 @@ class ItemList:
       "effect": ""
     },
     {
+      "id": 33,
       "kind": "usable",
       "name": "Potion",
       "level": 1,
@@ -331,6 +364,7 @@ class ItemList:
       "effect": "healing"
     },
     {
+      "id": 34,
       "kind": "usable",
       "name": "Scroll",
       "level": 1,
@@ -341,6 +375,7 @@ class ItemList:
       "effect": "digging"
     },
     {
+      "id": 35,
       "kind": "usable",
       "name": "Scroll",
       "level": 1,
@@ -351,6 +386,7 @@ class ItemList:
       "effect": "blinking"
     },
     {
+      "id": 36,
       "kind": "usable",
       "name": "Scroll",
       "level": 2,
@@ -361,6 +397,7 @@ class ItemList:
       "effect": "teleport"
     },
     {
+      "id": 37,
       "kind": "usable",
       "name": "Potion",
       "level": 2,
@@ -371,6 +408,7 @@ class ItemList:
       "effect": "invisibility"
     },
     {
+      "id": 38,
       "kind": "usable",
       "name": "Scroll",
       "level": 2,
@@ -381,6 +419,7 @@ class ItemList:
       "effect": "shopping"
     },
     {
+      "id": 39,
       "kind": "usable",
       "name": "Scroll",
       "level": 4,
@@ -391,6 +430,7 @@ class ItemList:
       "effect": "time warp"
     },
     {
+      "id": 40,
       "kind": "usable",
       "name": "Scroll",
       "level": 3,
@@ -401,6 +441,7 @@ class ItemList:
       "effect": "fireball"
     },
     {
+      "id": 41,
       "kind": "usable",
       "name": "Potion",
       "level": 4,

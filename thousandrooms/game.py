@@ -4,8 +4,11 @@ import os
 import json
 import copy
 import sys
+import time
+import threading
 from types import *
 
+import dill as pickle
 from colored import fore, back, style
 
 from .monster import Monster
@@ -20,14 +23,17 @@ from .utils import Utils
 clear=lambda: os.system('cls' if os.name == 'nt' else 'clear')
 
 class Game:
-    saveFilePath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "save.json")
+    saveFilePath = os.path.join(os.path.abspath(os.path.dirname(__file__)), "save")
+    saveListFilePath = os.path.join(saveFilePath, "saveList.json")
+    playerQuit = False
+    restart = False
 
     def __init__(self):
         self.initialize()
         
     def initialize(self):
-        self.mode = "start"
-        self.quit = False
+        self.mode = "peace"
+        self.restart = False
         self.turn = 1
         self.nextLevel = 100
         self.level = 1
@@ -36,7 +42,6 @@ class Game:
         self.store = None
         self.saveSlot = -1
         self.options = {
-            "start": "\n<L>oad, <N>ew",
             "combat": "\n<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
             "peace": "\n<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave, <Q>uit",
             "gameOver": "\n<R>estart, <Q>uit",
@@ -45,7 +50,6 @@ class Game:
             "map": lambda : self.map.getOptions() if self.map else ""
         }
         self.resolver = {
-            "start": self.startResolve,
             "combat": self.combatResolve,
             "peace": self.peaceResolve,
             "gameOver": self.gameOverResolve,
@@ -54,7 +58,6 @@ class Game:
             "map": self.mapResolve
         }
         self.display = {
-            "start": self.startDisplay,
             "combat": self.combatDisplay,
             "peace": self.peaceDisplay,
             "gameOver": self.gameOverDisplay,
@@ -75,7 +78,6 @@ class Game:
         }
         self.inititemListOptions()
         self.clearResolution()
-        self.nextTurn()
 
     def inititemListOptions(self):
         self.itemListOptions = {
@@ -131,9 +133,6 @@ class Game:
             print("\n" + f"{style.RESET}\n".join(self.resolution) + style.RESET)
 
 ### DISPLAY METHODS ###
-
-    def startDisplay(self):
-        print(f"{style.BOLD}Welcome To The Dungeon of 1000 Rooms!\n{style.RESET}")
 
     def combatDisplay(self):
         self.printStatHeader()
@@ -616,35 +615,6 @@ class Game:
             return False
         return True
 
-    def startResolve(self, action):
-        if action == "L":            
-            saves = self.loadSaveFiles()
-            if saves:
-                clear()
-                self.printSaveList(saves)
-                saveFile = None
-                while not saveFile:
-                    sys.stdout.write(f"\n{style.BOLD}Choose a save file: ")
-                    saveChoice = input()
-                    try:
-                        saveIndex = int(saveChoice) - 1
-                        saveFile = saves[saveIndex]
-                        self.loadSave(saveFile)
-                        self.saveSlot = saveIndex
-                    except IndexError:
-                        print("Invalid item number")
-                    except ValueError:
-                        print("Please enter an integer")
-            else:
-                print ("No save file found, let's start a new game instead!")
-                self.startNewGame()
-        elif action == "N":
-            self.startNewGame()
-        else:
-            return False
-        self.mode = "peace"
-        return True
-
     def combatResolve(self, action):
         if action == "A":            
             self.playerAttack()      
@@ -710,19 +680,22 @@ class Game:
             print("<C>ontinue or <Q>uit?")
             choice = input()
             if len(choice) > 0 and choice[0].upper() == "Q":
-                self.quit = True
+                self.mode = "quit"
+                self.playerQuit = True
         elif action == "Q":
-            self.quit = True
+            self.mode = "quit"
+            self.playerQuit = True
         else:
             return False
+            
         return True
 
     def gameOverResolve(self, action):
         if action == "R":
-            print("restart")
-            self.initialize()
+            self.restart = True
         elif action == "Q":
-            self.quit = True
+            self.mode = "quit"
+            self.playerQuit = True
         return True
 
     def inventoryResolve(self, action):
@@ -809,92 +782,39 @@ class Game:
         self.player = Player(name)
         self.map = Map()
 
+    def checkSavePath(self):
+        if not os.path.exists(self.saveFilePath):
+            os.makedirs(self.saveFilePath)
+
+    def saveWorker(self):
+        saveFile = open(os.path.join(self.saveFilePath, self.player.saveId), 'wb')  
+        pickle.dump(self, saveFile)
+
     def createSave(self):
-        currSaveFiles = self.loadSaveFiles()
+        self.checkSavePath()
 
-        sys.stdout.write(f"{style.DIM}.")
-        saveObj = {
-            "player": dict(copy.deepcopy(self.player).__dict__),
-            "map": dict(copy.deepcopy(self.map).__dict__),
-            "game": {
-                "turn": self.turn,
-                "nextLevel": self.nextLevel,
-                "level": self.level
-            }
-        }
-
-        # make player items serializable
-        sys.stdout.write(fore.BLUE)
-        saveObj["items"] = []
-        for item in saveObj["player"]["items"]:
-            sys.stdout.write(".")
-            saveObj["items"].append(item.__dict__)
-        del saveObj["player"]["items"]
-
-        # make map rooms serializable
-        saveObj["map"]["rooms"] = {}
-        saveObj["map"]["monsters"] = {}
-        saveObj["map"]["doors"] = {
-            "ns": {},
-            "ew": {}
-        }
-        saveObj["map"]["stairs"] = {}
-
-        sys.stdout.write(fore.GREEN)
-        for f, floor in enumerate(saveObj["map"]["floors"]):
-            sys.stdout.write(".")
-            for r in range(self.map.width):
-                for c in range(self.map.width):
-                    saveKey = f"{f}-{r}-{c}"
-                    roomDict = floor["rooms"][(r,c)].__dict__
-                    monster = roomDict["monster"]
-                    saveObj["map"]["monsters"][saveKey] = monster.__dict__ if monster != None else None
-                    del roomDict["monster"]
-                    saveObj["map"]["rooms"][saveKey] = roomDict
-                    try: 
-                        ns = floor["doors"]["ns"][(r,c)].__dict__
-                        saveObj["map"]["doors"]["ns"][saveKey] = ns
-                    except KeyError:
-                        pass
-                    try:
-                        ew = floor["doors"]["ew"][(r,c)].__dict__
-                        saveObj["map"]["doors"]["ew"][saveKey] = ew
-                    except KeyError:
-                        pass
-                    try:
-                        stairs = floor["stairs"][(r,c)].__dict__
-                        saveObj["map"]["stairs"][saveKey] = stairs
-                    except KeyError:
-                        pass
-
-        sys.stdout.write(f"\n{style.RESET}")
-        del saveObj["map"]["floors"]
-
-        # save the file
-        if self.saveSlot == -1:
-            currSaveFiles.append(saveObj)
+        if self.player.saveId:
+            saveId = self.player.saveId 
         else:
-            currSaveFiles[self.saveSlot] = saveObj
+            saveId = str(int(time.time()))
+            self.player.saveId = saveId
 
-        with open(self.saveFilePath, 'w') as outfile:  
-                json.dump(currSaveFiles, outfile)
+        saveThread = threading.Thread(target=self.saveWorker)
+        saveThread.setDaemon(True)
+        saveThread.start()
 
-    def loadSaveFiles(self):
+        while saveThread.isAlive():
+            time.sleep(.3)
+            sys.stdout.write(".")
+        sys.stdout.write("\n")
+
         try:
-            with open(self.saveFilePath) as json_file:  
-                return json.load(json_file)
+            with open(self.saveListFilePath) as json_file:  
+                saveList = json.load(json_file)
         except:
-            return []
+            saveList = {}
 
-    def loadSave(self, load):
-        self.player = Player(load["player"]["name"], load["player"])
-        self.player.loadItems(load["items"])
-        for i in load["game"]:
-            setattr(self, i, load["game"][i])
-        self.map = Map(load["map"]["numFloors"], load["map"]["width"], load["map"])
+        saveList[saveId] = f"{self.player.name} ({self.player.level})"
 
-    def printSaveList(self, saveList):
-        for i, save in enumerate(saveList):
-            playerName = save["player"]["name"]
-            playerLevel = save["player"]["level"]
-            print(f"{i + 1}) {playerName} ({playerLevel})")
+        with open(self.saveListFilePath, 'w') as outfile:  
+            json.dump(saveList, outfile)

@@ -1,4 +1,5 @@
 import random
+import math
 
 from colored import fore, back, style
 
@@ -10,6 +11,8 @@ class Item:
         self.isEgo = False
         self.equipped = False
         self.kind = ''
+        self.stack = 1
+        self.id = 0
 
         if level > 0:
             self.level = level
@@ -33,9 +36,10 @@ class Item:
                     self.displayName = self.name
 
                 # improved items
-                if self.kind != "usable":
-                    if self.kind == "ring":
-                        self.level = (level + 1) // 2
+                if self.kind == "ring":
+                    self.level = min((level + 1) // 2, 10)
+                    descriptor = ItemList.descriptors["ring"][self.level]
+                elif self.kind in ["weapon", "armor"]:
                     levelDiff = level - self.level
                     if levelDiff > 0:
                         try:
@@ -75,11 +79,48 @@ class Item:
             setattr(self, key, ego["attributes"][key])
 
     def getAbilityLevel(self):
-
         if self.ability:
-            return (self.level + 1) // 2
+            return self.level if self.kind == "ring" else (self.level + 1) // 2
         else:
             return 0
+
+    def getPrice(self, valueFactor):
+        price = self.level * valueFactor
+        if self.kind == "usable":
+            price = price * 2
+        if self.isEgo:
+            price = price * 3
+        return price
+
+    def displayStack(self):
+        return f" [{self.stack}]" if self.stack > 1 else ""
+
+    def displayBonus(self):
+        out = ""
+        if self.atk:
+            out += f"{self.atk}"
+        if self.ac:
+            out += f"{self.ac}"
+        if self.ability and not "resist_" in self.ability:
+            ability = self.getAbilityLevel()
+            out += f"{ability}" if out == "" else f"({ability})"
+        return out
+
+    def displayAbility(self):
+        out = ""
+        abbreviations = {
+            "regeneration": "regen",
+            "resist_fire": "res. fire",
+            "resist_cold": "res. cold",
+            "resist_acid": "res. acid",
+            "resist_electric": "res. electric"
+        }
+        if self.ability:
+            try:
+                out += abbreviations[self.ability]
+            except KeyError:
+                out += self.ability
+        return out
 
     @staticmethod
     def getItem(level):
@@ -140,43 +181,6 @@ class Item:
         options["message"] = ""
         return out
 
-    @staticmethod
-    def getItemPrice(item, valueFactor):
-        price = item.level * valueFactor
-        if item.kind == "usable":
-            price = price * 2
-        if item.isEgo:
-            price = price * 3
-        return price
-
-    @staticmethod
-    def getItemBonus(item):
-        out = ""
-        if item.atk:
-            out += f"{item.atk}"
-        if item.ac:
-            out += f"{item.ac}"
-        if item.ability and not "resist_" in item.ability:
-            ability = item.getAbilityLevel()
-            out += f"{ability}" if out == "" else f"({ability})"
-        return out
-
-    @staticmethod
-    def getItemAbility(item):
-        out = ""
-        abbreviations = {
-            "regeneration": "regen",
-            "resist_fire": "res. fire",
-            "resist_cold": "res. cold",
-            "resist_acid": "res. acid",
-            "resist_electric": "res. electric"
-        }
-        if item.ability:
-            try:
-                out += abbreviations[item.ability]
-            except KeyError:
-                out += item.ability
-        return out
 
     @staticmethod
     def printInventory(source, options):
@@ -202,11 +206,11 @@ class Item:
         itemLines = []
         for i, item in enumerate(pageItems, 1):
             line = {
-                "Name": f"{startIndex + i}) {item.displayName}",
-                "Bonus": item.getItemBonus(item),
+                "Name": f"{startIndex + i}) {item.displayName}{item.displayStack()}",
+                "Bonus": item.displayBonus(),
                 "Type": f"{item.type}",
-                "Ability": item.getItemAbility(item),
-                "Value": f"{Item.getItemPrice(item, valueFactor)}"
+                "Ability": item.displayAbility(),
+                "Value": f"{item.getPrice(valueFactor)}"
             }
             if sourceType == "Player":
                 line["_color"] = fore.GREEN if item.equipped else style.RESET
