@@ -7,7 +7,6 @@ import sys
 import time
 from types import *
 
-import dill as pickle
 from colored import fore, back, style
 
 from .monster import Monster
@@ -810,8 +809,52 @@ class Game:
             }
         }
 
-    def createSave(self):
-        self.checkSavePath()
+        # make player items serializable
+        sys.stdout.write(fore.BLUE)
+        saveObj["items"] = []
+        for item in saveObj["player"]["items"]:
+            sys.stdout.write(".")
+            saveObj["items"].append(item.__dict__)
+        del saveObj["player"]["items"]
+
+        # make map rooms serializable
+        saveObj["map"]["rooms"] = {}
+        saveObj["map"]["monsters"] = {}
+        saveObj["map"]["doors"] = {
+            "ns": {},
+            "ew": {}
+        }
+        saveObj["map"]["stairs"] = {}
+
+        sys.stdout.write(fore.GREEN)
+        for f, floor in enumerate(saveObj["map"]["floors"]):
+            sys.stdout.write(".")
+            for r in range(self.map.width):
+                for c in range(self.map.width):
+                    saveKey = f"{f}-{r}-{c}"
+                    roomDict = floor["rooms"][(r,c)].__dict__
+                    monster = roomDict["monster"]
+                    saveObj["map"]["monsters"][saveKey] = monster.__dict__ if monster != None else None
+                    del roomDict["monster"]
+                    saveObj["map"]["rooms"][saveKey] = roomDict
+                    try: 
+                        ns = floor["doors"]["ns"][(r,c)].__dict__
+                        saveObj["map"]["doors"]["ns"][saveKey] = ns
+                    except KeyError:
+                        pass
+                    try:
+                        ew = floor["doors"]["ew"][(r,c)].__dict__
+                        saveObj["map"]["doors"]["ew"][saveKey] = ew
+                    except KeyError:
+                        pass
+                    try:
+                        stairs = floor["stairs"][(r,c)].__dict__
+                        saveObj["map"]["stairs"][saveKey] = stairs
+                    except KeyError:
+                        pass
+
+        sys.stdout.write(f"\n{style.RESET}")
+        del saveObj["map"]["floors"]
 
         self.saveWorker(saveObj)
 

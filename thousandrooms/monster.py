@@ -7,6 +7,8 @@ from .creature import Creature
 from .utils import Utils
 
 class Monster(Creature):
+    distribution = [0,0,0,0,0,0,0,1,1,1,1,1,2,2,2,1,3,3,3,4,4,5,5,6,6,7,7]
+
     def __init__(self, dungeonLevel, data = None):
         genlevel = random.randint(max(1, dungeonLevel - 1), dungeonLevel + 1)
         self.charges = 0
@@ -119,7 +121,10 @@ class Monster(Creature):
 
     @staticmethod
     def getMonster(level):
-        monsters = [monster for monster in MonsterList.monsters if monster["level"] <= level and monster["level"] > level - 10] 
+        randomLevel = 0
+        while randomLevel <= 0:
+            randomLevel = level - random.choice(Monster.distribution)
+        monsters = [monster for monster in MonsterList.monsters if monster["level"] == randomLevel] 
         info = random.choice(monsters)
         return info
 

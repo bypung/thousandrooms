@@ -39,6 +39,9 @@ class Item:
                 if self.kind == "ring":
                     self.level = min((level + 1) // 2, 10)
                     descriptor = ItemList.descriptors["ring"][self.level]
+                    self.displayName = f"{descriptor} {self.displayName}"
+                    if self.ac:
+                        self.ac = self.level
                 elif self.kind in ["weapon", "armor"]:
                     levelDiff = level - self.level
                     if levelDiff > 0:
@@ -113,7 +116,7 @@ class Item:
             "resist_fire": "res. fire",
             "resist_cold": "res. cold",
             "resist_acid": "res. acid",
-            "resist_electric": "res. electric"
+            "resist_electric": "res. elec."
         }
         if self.ability:
             try:

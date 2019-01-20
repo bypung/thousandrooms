@@ -4,6 +4,7 @@ import json
 import dill as pickle
 
 from colored import fore, back, style
+import colorama
 
 from .game import Game
 from .player import Player
@@ -115,4 +116,6 @@ def main(args=None):
         print()
 
 if __name__ == "__main__":
+    colorama.init()
     main()
+    colorama.deinit()

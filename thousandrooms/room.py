@@ -1,4 +1,5 @@
 import random
+
 from colored import fore, back, style
 
 from .monster import Monster
@@ -80,7 +81,12 @@ class Room:
 
     def printWall(self, side, stairs):
         if self.known:
-            glyph = '[' if side == "left" else ']'
+            if stairs == "up":
+                glyph = '<' if side == "left" else '>'
+            elif stairs == "down":
+                glyph = '{' if side == "left" else '}'
+            else:
+                glyph = '[' if side == "left" else ']'
         else:
             glyph = ' '
         

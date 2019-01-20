@@ -17,7 +17,7 @@ class Store:
                 self.items += [newItem]
 
     def addItem(self, item):
-        if kind == "usable":
+        if item.kind == "usable":
             found = False
             for invItem in self.items:
                 if invItem.id == item.id:

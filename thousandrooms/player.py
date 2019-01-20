@@ -106,7 +106,7 @@ class Player(Creature):
         self.applyItems()
         
     def applyItems(self):
-        self.atk = 1
+        self.atk = (self.level + 1) // 2
         self.ac = 10
         self.abilities = copy.copy(self.innateAbilities)
         self.resist = []

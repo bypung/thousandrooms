@@ -5,7 +5,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name="thousandrooms",
-    version="0.0.16",
+    version="0.1.4",
     author="Ben Pung",
     author_email="ben@houseofpung.net",
     description="A simple roguelike RPG",
@@ -13,6 +13,10 @@ setuptools.setup(
     long_description_content_type="text/markdown",
     url="https://github.com/bypung/thousandrooms",
     packages=setuptools.find_packages(),
+    install_requires=[
+        'colored',
+        'colorama'
+    ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "License :: OSI Approved :: MIT License",

@@ -7,14 +7,14 @@ This is a simple Rogue-like RPG written as an exercise in teaching myself Python
 The easiest way to install is using pip:
 
 ```
-pip install thousand-rooms
+pip install thousandrooms
 ```
 
 The game was designed for a 80 x 24 terminal, with white text on a black background (and vice versa). Other sizes and default colors may be suboptimal.
 
 ## The Game
 
-The goal of the game is to get to the bottom level of the dungeon, retrieve the Idol, and return to the surface alive. You will face monsters in every room, with stronger monsters guarding each set of stairs down to the next level. Additionally, all the monsters in the dungeon will gain in strength over time, so speed is of the essence!
+The goal of the game is to get to the bottom level of the dungeon, retrieve the Idol of Onekrum, and return to the surface alive. You will face monsters in every room, with stronger monsters guarding each set of stairs down to the next level. Additionally, all the monsters in the dungeon will gain in strength over time, so speed is of the essence!
 
 Once you retrieve the Idol, all rooms will fill with monsters again, but at least you know the way out...
 

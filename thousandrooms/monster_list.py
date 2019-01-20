@@ -1001,7 +1001,7 @@ class MonsterList:
         ],
         "animal" : [
             "It roars a challenge!",
-            "The ground shakes as it stomps toward you!"
+            "The ground shakes as it stomps toward you!",
             "You feel its eyes on you..."
         ],
         "insect" : [

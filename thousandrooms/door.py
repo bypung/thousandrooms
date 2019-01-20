@@ -1,7 +1,5 @@
 import random
 
-from colorama import Fore, Back, Style
-
 class Door:
     def __init__(self, doorType, data = None):
         if data:
