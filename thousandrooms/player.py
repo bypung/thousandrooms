@@ -10,33 +10,33 @@ from .item_list import ItemList
 
 class Player(Creature):
     def __init__(self, name, saveInfo = None):
+        self.level = 1
         self.xp = 0
         self.gp = 0
         self.hp = 0
+        self.ac = 10
         self.maxHp = 0
         self.history = {}
         self.name = name
         self.nextLevel = 100
+        self.items = []
         self.skills = []
         self.innateAbilities = {}
         self.abilities = {}
         self.conditions = {}
         self.resist = []
+        self.monsterLore = {}
         self.hasIdol = False
+        self.saveId = ""
         
         info = saveInfo if saveInfo else {
             "name": name,
             "level": 1,
             "nextLevel": 1000,
             "atk": 1,
-            "atkType": 'blunt',
-            "ac": 10,
             "hp": 10,
             "maxHp": 10,
-            "xp": 0,
-            "gp": 0,
-            "items": [],
-            "abilities": [],
+            "atkType": 'blunt',
             "history": {
                 "rest": 0,
                 "risky_win": 0,
@@ -48,8 +48,7 @@ class Player(Creature):
                 "dmg_done": 0,
                 "dmg_taken": 0,
                 "epitaph": "Still exploring..."
-            },
-            "monsterLore": {}
+            }
         }
         Creature.__init__(self, info)
 
@@ -67,19 +66,29 @@ class Player(Creature):
     def addItem(self, item):
         # auto-equip item if no item of this type is equipped
         kind = item.kind
-        if kind != "usable":
+        if kind == "usable":
+            found = False
+            for invItem in self.items:
+                if invItem.id == item.id:
+                    found = True
+                    invItem.stack += 1
+            if not found:
+                self.items.append(item)
+        else:
             found = False
             for invItem in self.items:
                 if invItem.kind == kind:
                     found = True
             if not found:
                 item.equipped = True
-
-        self.items.append(item)
-        self.applyItems()
+            self.items.append(item)
+            self.applyItems()
         
     def removeItem(self, item):
-        self.items.remove(item)
+        if item.kind == "usable" and item.stack > 1:
+            item.stack -= 1
+        else:
+            self.items.remove(item)
         self.applyItems()
         
     def equipItem(self, newItem):

@@ -1,7 +1,8 @@
 .~lock.*
 *.pyc
 .vscode/
-save*.json
+save/
 build/
 dist/
 *.egg-info
+save*json
