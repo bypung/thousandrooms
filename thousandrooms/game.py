@@ -224,7 +224,9 @@ class Game:
         while self.monster.charges > 0:
             self.monster.charges -= 1
             specAtkRoll = self.rollDie(20) + self.monster.atk
-            if atkRoll >= playerDefense:
+            if not self.monster.special:
+                specAtkRoll += int(math.sqrt(self.monster.level))
+            if specAtkRoll >= playerDefense:
                 self.addLore("special")
                 if self.monster.special == "drain":
                     self.player.drain(random.randint(1, self.monster.level) * 50)
@@ -262,6 +264,23 @@ class Game:
                     else:
                         self.addResolution(f"{fore.CHARTREUSE_1}It shocks you and makes you drop your weapon!")
                         self.player.unequipItem("weapon")
+                elif self.monster.special == "sunder":
+                    sunderables = [item for item in self.player.items if item.kind in ["weapon", "armor"] and item.equipped]
+                    item = random.choice(sunderables)
+                    if item:
+                        self.addResolution(f"{fore.CHARTREUSE_1}It strikes your {item.displayName} and damages it!")
+                        if item.kind == "weapon":
+                            item.atk -= 1
+                            if item.atk == 0:
+                                self.player.removeItem(item)
+                                self.addResolution(f"{fore.CHARTREUSE_1}Your weapon is destroyed!")
+                        else:
+                            item.ac -= 1
+                            if item.ac == 0:
+                                self.player.removeItem(item)
+                                self.addResolution(f"{fore.CHARTREUSE_1}Your armor is destroyed!")
+                        self.player.applyItems()
+
                 else:
                     damRoll = self.rollDamage(self.monster)
                     self.addResolution(f"{fore.RED}The {self.monster.name} {self.monster.getAtkVerb()} you for {style.BOLD}{damRoll}")
@@ -716,7 +735,11 @@ class Game:
         elif action == "F":
             self.filterItems()
         elif action == "U":
-            item = self.selectItem(self.player, "Use which item?")
+            self.itemListOptions["currPage"] = 0
+            self.itemListOptions["filter"] = "usable"
+            clear()
+            self.inventoryDisplay()
+            item = self.selectItem(self.player, "\nUse which item?")
             if item:
                 used = self.resolveItem(item, self.itemListOptions["mode"])
                 if used:

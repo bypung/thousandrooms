@@ -13,7 +13,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": 26
         },
         {
             "id": 2,
@@ -28,7 +29,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 3,
@@ -43,7 +45,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 4,
@@ -58,7 +61,8 @@ class MonsterList:
             "atk_type": "acid",
             "resist": "acid",
             "vulnerability": "electric",
-            "special": "melt"
+            "special": "melt",
+            "": ""
         },
         {
             "id": 5,
@@ -73,7 +77,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "slash",
             "vulnerability": "blunt",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 6,
@@ -88,7 +93,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 7,
@@ -103,7 +109,8 @@ class MonsterList:
             "atk_type": "acid",
             "resist": "acid",
             "vulnerability": "electric",
-            "special": "melt"
+            "special": "melt",
+            "": ""
         },
         {
             "id": 8,
@@ -118,7 +125,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 9,
@@ -133,7 +141,8 @@ class MonsterList:
             "atk_type": "fire",
             "resist": "fire",
             "vulnerability": "cold",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         },
         {
             "id": 10,
@@ -148,7 +157,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 11,
@@ -163,7 +173,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "cold",
             "vulnerability": "fire",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 12,
@@ -178,7 +189,8 @@ class MonsterList:
             "atk_type": "grab",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 13,
@@ -193,7 +205,8 @@ class MonsterList:
             "atk_type": "touch",
             "resist": "",
             "vulnerability": "",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 14,
@@ -208,7 +221,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 15,
@@ -223,7 +237,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 16,
@@ -235,10 +250,11 @@ class MonsterList:
             "total": 16,
             "type": "demon",
             "subtype": "",
-            "atk_type": "pierce",
-            "resist": "",
-            "vulnerability": "",
-            "special": ""
+            "atk_type": "cold",
+            "resist": "pierce",
+            "vulnerability": "slash",
+            "special": "freeze",
+            "": ""
         },
         {
             "id": 17,
@@ -253,7 +269,8 @@ class MonsterList:
             "atk_type": "acid",
             "resist": "electric",
             "vulnerability": "fire",
-            "special": "melt"
+            "special": "melt",
+            "": ""
         },
         {
             "id": 18,
@@ -268,7 +285,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "pierce",
             "vulnerability": "fire",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 19,
@@ -283,7 +301,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "fire",
             "vulnerability": "slash",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 20,
@@ -298,7 +317,8 @@ class MonsterList:
             "atk_type": "cold",
             "resist": "cold",
             "vulnerability": "electric",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 21,
@@ -313,7 +333,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "blunt",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 22,
@@ -328,7 +349,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "fire",
             "vulnerability": "cold",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         },
         {
             "id": 23,
@@ -343,7 +365,8 @@ class MonsterList:
             "atk_type": "acid",
             "resist": "fire",
             "vulnerability": "blunt",
-            "special": "melt"
+            "special": "melt",
+            "": ""
         },
         {
             "id": 24,
@@ -358,7 +381,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 25,
@@ -373,7 +397,8 @@ class MonsterList:
             "atk_type": "electric",
             "resist": "blunt",
             "vulnerability": "pierce",
-            "special": "shock"
+            "special": "shock",
+            "": ""
         },
         {
             "id": 26,
@@ -388,7 +413,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 27,
@@ -403,7 +429,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "slash",
             "vulnerability": "cold",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 28,
@@ -418,7 +445,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 29,
@@ -433,7 +461,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "cold",
             "vulnerability": "fire",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 30,
@@ -448,7 +477,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "blunt",
             "vulnerability": "cold",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 31,
@@ -463,7 +493,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 32,
@@ -478,7 +509,8 @@ class MonsterList:
             "atk_type": "grab",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 33,
@@ -493,7 +525,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "slash",
             "vulnerability": "electric",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 34,
@@ -508,7 +541,8 @@ class MonsterList:
             "atk_type": "touch",
             "resist": "electric",
             "vulnerability": "fire",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 35,
@@ -523,7 +557,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 36,
@@ -538,7 +573,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 37,
@@ -553,7 +589,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "cold",
             "vulnerability": "fire",
-            "special": "freeze"
+            "special": "freeze",
+            "": ""
         },
         {
             "id": 38,
@@ -568,7 +605,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 27,
@@ -583,7 +621,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 28,
@@ -598,7 +637,8 @@ class MonsterList:
             "atk_type": "fire",
             "resist": "fire",
             "vulnerability": "pierce",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         },
         {
             "id": 29,
@@ -613,7 +653,8 @@ class MonsterList:
             "atk_type": "electric",
             "resist": "electric",
             "vulnerability": "blunt",
-            "special": "shock"
+            "special": "shock",
+            "": ""
         },
         {
             "id": 30,
@@ -628,7 +669,8 @@ class MonsterList:
             "atk_type": "fire",
             "resist": "fire",
             "vulnerability": "cold",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         },
         {
             "id": 31,
@@ -643,7 +685,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "slash",
             "vulnerability": "blunt",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 32,
@@ -658,7 +701,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "cold",
             "vulnerability": "fire",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 33,
@@ -673,7 +717,8 @@ class MonsterList:
             "atk_type": "grab",
             "resist": "blunt",
             "vulnerability": "slash",
-            "special": "melt"
+            "special": "melt",
+            "": ""
         },
         {
             "id": 34,
@@ -688,7 +733,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "pierce",
             "vulnerability": "fire",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 35,
@@ -703,7 +749,8 @@ class MonsterList:
             "atk_type": "grab",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 36,
@@ -718,7 +765,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 37,
@@ -733,7 +781,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "electric",
             "vulnerability": "fire",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 38,
@@ -748,7 +797,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 39,
@@ -763,7 +813,8 @@ class MonsterList:
             "atk_type": "touch",
             "resist": "slash",
             "vulnerability": "",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 40,
@@ -778,7 +829,8 @@ class MonsterList:
             "atk_type": "blunt",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 41,
@@ -793,7 +845,8 @@ class MonsterList:
             "atk_type": "fire",
             "resist": "pierce",
             "vulnerability": "cold",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         },
         {
             "id": 42,
@@ -808,7 +861,8 @@ class MonsterList:
             "atk_type": "grab",
             "resist": "fire",
             "vulnerability": "electric",
-            "special": "drain"
+            "special": "drain",
+            "": ""
         },
         {
             "id": 43,
@@ -823,7 +877,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": "freeze"
+            "special": "freeze",
+            "": ""
         },
         {
             "id": 44,
@@ -838,7 +893,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "slash",
             "vulnerability": "fire",
-            "special": ""
+            "special": "",
+            "": ""
         },
         {
             "id": 45,
@@ -853,7 +909,8 @@ class MonsterList:
             "atk_type": "slash",
             "resist": "",
             "vulnerability": "",
-            "special": ""
+            "special": "sunder",
+            "": ""
         },
         {
             "id": 46,
@@ -868,7 +925,8 @@ class MonsterList:
             "atk_type": "pierce",
             "resist": "fire",
             "vulnerability": "acid",
-            "special": "burn"
+            "special": "burn",
+            "": ""
         }
     ]
 
