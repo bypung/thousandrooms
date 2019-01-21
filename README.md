@@ -10,7 +10,7 @@ The easiest way to install is using pip:
 pip install thousandrooms
 ```
 
-The game was designed for a 80 x 24 terminal, with white text on a black background (and vice versa). Other sizes and default colors may be suboptimal.
+The game was designed for a 80 x 24 terminal, with white text on a black background (and vice versa). Other sizes and default colors may be suboptimal. Colors are likely not to work on Windows based terminals, sorry!
 
 ## The Game
 
