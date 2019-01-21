@@ -32,13 +32,18 @@ class Game:
     def initialize(self):
         self.mode = "peace"
         self.restart = False
+
         self.turn = 1
         self.nextLevel = 100
         self.level = 1
+        self.ironman = False
+        self.saveId = ""
+
+        self.player = None
         self.monster = None
         self.map = None
         self.store = None
-        self.saveSlot = -1
+
         self.options = {
             "combat": "\n<A>ttack, <D>efend, <X>amine, <U>se Item, <R>un",
             "peace": "\n<R>est, <C>ontinue, <I>nventory, <M>erchant, <S>ave, <Q>uit",
@@ -154,7 +159,7 @@ class Game:
         Item.printInventory(invSource, self.itemListOptions)
 
     def mapDisplay(self):
-        self.map.printFloor(self.turn)
+        self.map.printFloor(self.turn, self.nextLevel)
 
     def gameOverDisplay(self):
         self.player.printHistory(self.turn)
@@ -680,7 +685,13 @@ class Game:
             if len(choice) > 0 and choice[0].upper() == "Q":
                 self.endGame()
         elif action == "Q":
-            self.endGame()
+            if not self.saveId:
+                print(f"{fore.RED}Quit without saving? {style.DIM}<Y>es or <N>o{style.RESET}")
+                choice = input()
+                if len(choice) > 0 and choice[0].upper() == "Y":
+                    self.endGame()
+            else:
+                self.endGame()
         else:
             return False
             
@@ -786,17 +797,17 @@ class Game:
             os.makedirs(self.saveFilePath)
 
     def saveWorker(self, saveObj):
-        saveFile = open(os.path.join(self.saveFilePath, self.player.saveId), 'w')
+        saveFile = open(os.path.join(self.saveFilePath, self.saveId), 'w')
         json.dump(saveObj, saveFile)
 
     def createSave(self):
         self.checkSavePath()
 
-        if self.player.saveId:
-            saveId = self.player.saveId 
+        if self.saveId:
+            saveId = self.saveId 
         else:
             saveId = str(int(time.time()))
-            self.player.saveId = saveId
+            self.saveId = saveId
 
         sys.stdout.write(f"{style.DIM}.")
         saveObj = {
@@ -805,7 +816,9 @@ class Game:
             "game": {
                 "turn": self.turn,
                 "nextLevel": self.nextLevel,
-                "level": self.level
+                "level": self.level,
+                "ironman": self.ironman,
+                "saveId": self.saveId
             }
         }
 
@@ -865,6 +878,8 @@ class Game:
             saveList = {}
 
         saveList[saveId] = f"{self.player.name} ({self.player.level})"
+        if self.ironman:
+            saveList[saveId] += f" {fore.STEEL_BLUE_3}[IRONMAN]{style.RESET}"
 
         with open(self.saveListFilePath, 'w') as outfile:  
             json.dump(saveList, outfile)

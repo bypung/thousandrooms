@@ -179,7 +179,7 @@ class Map:
         else:
             room.generateContents(self.dungeonLevel)
 
-    def printFloor(self, turn):
+    def printFloor(self, turn, nextLevel):
         floor = self.playerPosition[0]
         mapBuffer = []
         legendBuffer = [
@@ -188,7 +188,7 @@ class Map:
         ]
 
         ppSlug = f"[{self.playerPosition[1]},{self.playerPosition[2]}]"
-        print(f"{fore.MAGENTA}{style.BOLD}Dungeon Level {floor + 1} - Turn {turn}{style.RESET}")
+        print(f"{fore.MAGENTA}{style.BOLD}Dungeon Level {floor + 1} - Turn {turn}{style.RESET}{style.DIM}/{nextLevel}{style.RESET}")
 
         # print top map header
         header = f"{style.DIM}  "

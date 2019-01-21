@@ -37,6 +37,21 @@ class Launcher:
 
         return out
 
+    def deleteSave(self, saveId):
+        try:
+            with open(self.saveListFilePath, "r") as json_file:
+                saveList = json.load(json_file)
+        except:
+            return
+        
+        try:
+            del saveList[saveId]
+            with open(self.saveListFilePath, "w") as json_file:
+                json.dump(saveList, json_file)
+            os.remove(os.path.join(self.saveFilePath, saveId))
+        except KeyError:
+            pass
+
     def loadSave(self, load):
         loadFile = open(os.path.join(self.saveFilePath, load["saveId"]), "r")  
         load = json.load(loadFile)
@@ -52,6 +67,10 @@ class Launcher:
         name = input()
         self.game.player = Player(name)
         self.game.map = Map()
+        print(f"<I>ronman Mode? {style.DIM}<Enter> for no{style.RESET}")
+        ironman = input()
+        if len(ironman) > 0 and ironman[0].upper() == "I":
+            self.game.ironman = True
         self.runGame()
 
     def runGame(self):
@@ -88,6 +107,10 @@ class Launcher:
                             for i in load["game"]:
                                 setattr(self.game, i, load["game"][i])
                             self.game.map = Map(load["map"]["numFloors"], load["map"]["width"], load["map"])
+
+                            if self.game.ironman:
+                                self.deleteSave(self.game.saveId)
+                                self.game.saveId = ""
 
                             gameStarted = True
                             self.runGame()

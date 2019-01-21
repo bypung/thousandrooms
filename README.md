@@ -28,7 +28,9 @@ Every great legend starts somewhere. Yours starts here.
 Load a previously saved game. There may be more than one adventurer saved, so make sure you pick the right one!
 
 ##### New
-Start a brand new adventure. You will be able to choose your hero's name.
+Start a brand new adventure. You will be able to choose your hero's name. 
+
+You can also choose to start in Ironman mode, which will not allow you to restore a saved game if you die. Your game will also not be saved if you kill the program or it crashes, so be careful!
 
 ### An Empty Room
 

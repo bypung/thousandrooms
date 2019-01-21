@@ -27,7 +27,6 @@ class Player(Creature):
         self.resist = []
         self.monsterLore = {}
         self.hasIdol = False
-        self.saveId = ""
         
         info = saveInfo if saveInfo else {
             "name": name,
